@@ -1,3 +1,23 @@
+ /**
+  *     
+  * This file is part of PipaCoder.
+
+    PipaCoder is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PipaCoder is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with PipaCoder.  If not, see <http://www.gnu.org/licenses/>.
+    
+    Copyright© 2009 Jernej Virag
+  */
+
 package org.kiberpipa.coder.processor;
 
 import java.io.BufferedReader;
@@ -6,6 +26,7 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.kiberpipa.coder.Configuration;
 import org.kiberpipa.coder.Job;
 import org.kiberpipa.coder.OutputFormat;
 import org.kiberpipa.coder.enums.JobStates;
@@ -33,7 +54,7 @@ public class FFMpegProcessor extends VideoProcessor
    {
       StringBuilder string = new StringBuilder();
       
-      string.append("ffmpeg.exe -y");  // -y to overwrite possibly existing output
+      string.append(Configuration.getValue("ffmpegdir") + "ffmpeg.exe -y");  // -y to overwrite possibly existing output
       string.append(" -threads " + (Runtime.getRuntime().availableProcessors() + 1));  // Number of cores + 1 threads
       
       // Input file name
@@ -104,7 +125,7 @@ public class FFMpegProcessor extends VideoProcessor
          ProcessLine(line);
       }
       
-      System.out.println("Process exit code: " + p.exitValue());
+      System.out.println("Transcoding done, exit code was " + p.exitValue());
       
       if (p.exitValue() != 0)
       {

@@ -1,3 +1,23 @@
+ /**
+  *     
+  * This file is part of PipaCoder.
+
+    PipaCoder is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PipaCoder is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with PipaCoder.  If not, see <http://www.gnu.org/licenses/>.
+    
+    Copyright© 2009 Jernej Virag
+  */
+
 package org.kiberpipa.coder;
 
 import java.util.ArrayList;
@@ -84,9 +104,14 @@ public class JobManager implements Runnable
      }
    }
    
-   public void addJob(String fileName, OutputFormat format)
+   public int addJob(String fileName, OutputFormat format)
    {
-      Job newJob = new Job(fileName, format);
+	  // TODO: create ID
+	   int id = 0;
+	   
+      Job newJob = new Job(id, fileName, format);
+      
+      // TODO: add job to database
       
       synchronized (jobMonitor)
       {
@@ -96,6 +121,8 @@ public class JobManager implements Runnable
          // Wake up the manager to check queue
          jobMonitor.notify();
       }
+      
+      return id;
    }
    
 }
