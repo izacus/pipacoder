@@ -18,14 +18,17 @@
     Copyright© 2009 Jernej Virag
   */
 
-package org.kiberpipa.coder;
+package org.kiberpipa.coder.jobs;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.kiberpipa.coder.Database;
 import org.kiberpipa.coder.enums.JobStates;
+import org.kiberpipa.coder.formats.OutputFormat;
 
 public class JobManager implements Runnable
 {
@@ -57,6 +60,20 @@ public class JobManager implements Runnable
       jobQueue = Collections.synchronizedList(new LinkedList<Job>());
       runningJob = null;
       jobMonitor = new Object();
+      
+      // Get jobs from database
+      ArrayList<Job> jobs = Database.getJobs();
+      
+      for (Job job : jobs)
+      {
+         this.jobs.add(job);
+         
+         // Add waiting or killed jobs back to queue
+         if (job.getState() == JobStates.WAITING || job.getState() == JobStates.RUNNING)
+         {
+            jobQueue.add(job);
+         }
+      }
       
       // Create new management thread
       new Thread(this, "Job manager").start();
@@ -105,13 +122,29 @@ public class JobManager implements Runnable
    }
    
    public int addJob(String fileName, OutputFormat format)
-   {
-	  // TODO: create ID
-	   int id = 0;
-	   
-      Job newJob = new Job(id, fileName, format);
+   {  
+      Job newJob = null;
       
-      // TODO: add job to database
+      try
+      {
+         newJob = new Job(0, fileName, format);
+      }
+      catch (Exception e)
+      {
+         System.err.println(e.getMessage());
+         return -1;
+      }
+      
+      try
+      {
+         Database.addJob(newJob);
+      }
+      catch(SQLException e)
+      {
+         System.err.println("Failed to add job: " + e.getMessage());
+         
+         return -1;
+      }
       
       synchronized (jobMonitor)
       {
@@ -122,7 +155,7 @@ public class JobManager implements Runnable
          jobMonitor.notify();
       }
       
-      return id;
+      return newJob.getId();
    }
    
 }

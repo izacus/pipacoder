@@ -18,9 +18,13 @@
     Copyright© 2009 Jernej Virag
   */
 
-package org.kiberpipa.coder;
+package org.kiberpipa.coder.jobs;
 
+import java.util.LinkedHashMap;
+
+import org.kiberpipa.coder.Database;
 import org.kiberpipa.coder.enums.JobStates;
+import org.kiberpipa.coder.formats.OutputFormat;
 import org.kiberpipa.coder.processor.FFMpegProcessor;
 import org.kiberpipa.coder.processor.VideoProcessor;
 
@@ -32,6 +36,8 @@ public class Job
    private OutputFormat outputFormat;
    private VideoProcessor videoProcessor;
    private String outputFileName;
+   private String failMessage = null;
+   
    
    private JobStates jobState;
    private float progress;
@@ -42,13 +48,20 @@ public class Job
     * @param fileName Input filename
     * @param outputFormat Format to convert the file to
     */
-   public Job(int id, String fileName, OutputFormat outputFormat)
+   public Job(int id, String fileName, OutputFormat outputFormat) throws Exception
    {  
       this(id, fileName, outputFormat, null);
    }
    
-   public Job(int id, String fileName, OutputFormat outputFormat, VideoProcessor videoProcessor)
+   public Job(int id, String fileName, OutputFormat outputFormat, VideoProcessor videoProcessor) throws Exception
    {
+      if (outputFormat == null)
+      {
+         throw new Exception("Invalid format specified!");
+      }
+      
+      this.id = id;
+      
       this.inputFileName = fileName;
       this.outputFormat = outputFormat;
       
@@ -77,7 +90,17 @@ public class Job
    
    public void setState(JobStates state)
    {
+      setState(state, true);
+   }
+   
+   public void setState(JobStates state, boolean updateDB)
+   {
       this.jobState = state;
+      
+      if (updateDB)
+      {
+         Database.updateJobState(this);
+      }
    }
    
    public JobStates getState()
@@ -115,5 +138,21 @@ public class Job
    public int getId() 
    {
 	   return id;
+   }
+   
+   public void setId(int id)
+   {
+      this.id = id;
+   }
+   
+   public void fail(String message)
+   {
+      this.failMessage = message;
+      this.setState(JobStates.FAILED, true);
+   }
+   
+   public String getFailMessage()
+   {
+      return this.failMessage;
    }
 }

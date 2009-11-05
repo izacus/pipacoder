@@ -23,13 +23,15 @@ package org.kiberpipa.coder.processor;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.kiberpipa.coder.Configuration;
-import org.kiberpipa.coder.Job;
-import org.kiberpipa.coder.OutputFormat;
 import org.kiberpipa.coder.enums.JobStates;
+import org.kiberpipa.coder.formats.OutputFormat;
+import org.kiberpipa.coder.jobs.Job;
 
 public class FFMpegProcessor extends VideoProcessor
 {
@@ -44,10 +46,22 @@ public class FFMpegProcessor extends VideoProcessor
    }
    
    private int videoDuration;
+   private Process p = null;
+   private LinkedHashMap<Integer, String> lastLineOutput;
+   private int lineCount = 0;
    
    public FFMpegProcessor(Job processingJob)
    {
       super(processingJob);
+      
+      lastLineOutput = new LinkedHashMap<Integer, String>()
+      {
+         @Override
+         protected boolean removeEldestEntry(Entry<Integer, String> eldest)
+         {
+            return this.size() > 10;   
+         }
+      };
    }
    
    private String commandString()
@@ -87,9 +101,6 @@ public class FFMpegProcessor extends VideoProcessor
    @Override
    public void run()
    {
-      // Start FFMpeg process
-      Process p = null;
-      
       String execString = commandString();
       
       System.out.println(execString);
@@ -121,7 +132,12 @@ public class FFMpegProcessor extends VideoProcessor
             break;
          }
          
-         //System.out.println(line);
+         
+         if (line == null)
+         {
+            break;
+         }
+         
          ProcessLine(line);
       }
       
@@ -129,7 +145,15 @@ public class FFMpegProcessor extends VideoProcessor
       
       if (p.exitValue() != 0)
       {
-         job.setState(JobStates.FAILED);
+         StringBuilder failMessage = new StringBuilder();
+         
+         for (String failLine : lastLineOutput.values())
+         {
+            failMessage.append(failLine);
+            failMessage.append("\r\n");
+         }
+         
+         job.fail(failMessage.toString());
       }
       else
       {
@@ -162,12 +186,15 @@ public class FFMpegProcessor extends VideoProcessor
          return;
       }
       
+      lastLineOutput.put(lineCount++, line);
+      
       System.out.println(line);
    }
 
    @Override
    public void stop()
    {
-      
+      p.destroy();
+      job.setState(JobStates.FAILED);
    }
 }
