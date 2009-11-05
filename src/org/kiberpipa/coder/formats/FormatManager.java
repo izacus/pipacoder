@@ -108,13 +108,12 @@ public class FormatManager
       } 
       catch (SQLException e)
       {
-         // TODO Auto-generated catch block
          e.printStackTrace();
+         
+         return -1;
       }
 		
 		this.formats.put(id, newFormat);
-		
-
 		
 		return id;
 	}
@@ -127,7 +126,7 @@ public class FormatManager
 			// Remove it from map
 			formats.put(id, null);
 			
-			// TODO: remove format from database
+			Database.removeFormat(id);
 		}
 		else
 		{

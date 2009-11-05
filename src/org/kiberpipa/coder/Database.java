@@ -278,6 +278,36 @@ public class Database
 	   }
 	}
 	
+	public static void removeFormat(int formatId)
+	{
+	     Connection dbConn = null;
+	      
+	      try
+	      {
+	         dbConn = connectSQLite();
+	         
+	         PreparedStatement statement = dbConn.prepareStatement("DELETE FROM formats WHERE id = ?");
+	         statement.setInt(1, formatId);
+	         
+	         statement.executeUpdate();
+	         
+	      }
+	      catch (SQLException e)
+	      {
+	         System.err.println("Failed to delete format id " + formatId);
+	      }
+	      finally
+	      {
+	         if (dbConn != null)
+	            try
+	            {
+	               dbConn.close();
+	            } 
+	            catch (SQLException e)
+	            {}
+	      }
+	}
+	
 	/*
 	 * JOB MANAGEMENT
 	 */
@@ -375,7 +405,7 @@ public class Database
       }
 	}
 	
-	public static void addJob(Job job) throws SQLException
+	public static synchronized void addJob(Job job) throws SQLException
 	{
 	     Connection dbConn = null;
 	      
