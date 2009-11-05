@@ -19,6 +19,9 @@ package org.kiberpipa.coder;
 
 import java.io.IOException;
 
+import org.kiberpipa.coder.formats.FormatManager;
+import org.kiberpipa.coder.jobs.JobManager;
+
 /**
  * @author Jernej Virag
  *
@@ -28,13 +31,9 @@ public class Main
 
    public static void main(String[] args) throws IOException
    {    	   
-	  Database.poke(); 
-	   
-      // Setup test objects
-      OutputFormat format = new OutputFormat(0, "x264/aac", ".test.mp4", "libx264", 872, 486, 700000, "libfaac", 2, 48000, 128000);
+      FormatManager formatManager = FormatManager.getInstance();
       
       JobManager jobManager = JobManager.getInstance();
-      jobManager.addJob("./input/casper.flv", format);
+      jobManager.addJob("test.ogg", formatManager.getFormatWithId(1));
    }
-
 }

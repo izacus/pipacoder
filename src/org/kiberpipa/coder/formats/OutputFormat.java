@@ -18,7 +18,7 @@
     Copyright© 2009 Jernej Virag
   */
 
-package org.kiberpipa.coder;
+package org.kiberpipa.coder.formats;
 
 /**
  * Describes a valid output transcoding format
@@ -112,13 +112,29 @@ public class OutputFormat
    {
       return this.videoResolutionX + "x" + this.videoResolutionY;
    }
+   
+   public int getVideoResX()
+   {
+      return this.videoResolutionX;
+   }
+   
+   public int getVideoResY()
+   {
+      return this.videoResolutionY;
+   }
 
    public String getName()
    {
       return name;
    }
 
-public int getId() {
-	return id;
-}
+   public int getId() 
+   {
+      return id;
+   }
+   
+   public void setId(int id)
+   {
+      this.id = id;
+   }
 }

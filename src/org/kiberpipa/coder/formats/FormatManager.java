@@ -18,9 +18,13 @@
     Copyright© 2009 Jernej Virag
   */
 
-package org.kiberpipa.coder;
+package org.kiberpipa.coder.formats;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.kiberpipa.coder.Database;
 
 public class FormatManager 
 {
@@ -44,21 +48,31 @@ public class FormatManager
 	{
 		this.formats = new HashMap<Integer, OutputFormat>();
 		
+		// Load formats from database
+		ArrayList<OutputFormat> formatList = Database.getFormats();
+		
+		for (OutputFormat format : formatList)
+		{
+		   formats.put(format.getId(), format);
+		}
+		
+		System.out.println("Loaded " + formatList.size() + " known output formats from database.");
+		
 	}
 	
 	/**
 	 * Adds new output format to known formats
-	 * @param name				Visible format name 
+	 * @param name				   Visible format name 
 	 * @param fileAppendix		Appendix added to input filename to create output filename
 	 * @param videoFormat		Encoded video format
-	 * @param videoX			Video resolution X
-	 * @param videoY			Video resolution Y
+	 * @param videoX			   Video resolution X
+	 * @param videoY			   Video resolution Y
 	 * @param videoBitrate		Encoded video bitrate
 	 * @param audioFormat		Encoded audio format
 	 * @param audioChannels		Number of output audio channels
 	 * @param audioSamplerate	Encoded audio samplerate
 	 * @param audioBitrate		Encoded audio bitrate
-	 * @return					ID of the new format
+	 * @return					   ID of the new format
 	 */
 	public int addFormat(String name,
 						 String fileAppendix,
@@ -71,25 +85,36 @@ public class FormatManager
 						 int audioSamplerate,
 						 int audioBitrate)
 	{
-		// TODO: create ID
-		int id = 0;
+		// Format ID is set by the database query
+		int id = -1;
 		
 		OutputFormat newFormat = new OutputFormat(id, 
-												  name, 
-												  fileAppendix, 
-												  videoFormat, 
-												  videoX, 
-												  videoY, 
-												  videoBitrate, 
-												  audioFormat, 
-												  audioChannels, 
-												  audioSamplerate, 
-												  audioBitrate);
+												            name, 
+												            fileAppendix, 
+												            videoFormat, 
+												            videoX, 
+												            videoY, 
+												            videoBitrate, 
+												            audioFormat, 
+												            audioChannels, 
+												            audioSamplerate, 
+												            audioBitrate);
 		
+
+	    // Attempt to insert format into database 
+      try
+      {
+         Database.addFormat(newFormat);
+      } 
+      catch (SQLException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
 		
 		this.formats.put(id, newFormat);
 		
-		// TODO: save format to database
+
 		
 		return id;
 	}
@@ -108,5 +133,10 @@ public class FormatManager
 		{
 			throw new Exception("Output format with chosen ID does not exist.");
 		}
+	}
+	
+	public OutputFormat getFormatWithId(int id)
+	{
+	   return formats.get(id);
 	}
 }

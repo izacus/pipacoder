@@ -20,7 +20,7 @@
 
 package org.kiberpipa.coder.processor;
 
-import org.kiberpipa.coder.Job;
+import org.kiberpipa.coder.jobs.Job;
 
 public abstract class VideoProcessor implements Runnable
 {
