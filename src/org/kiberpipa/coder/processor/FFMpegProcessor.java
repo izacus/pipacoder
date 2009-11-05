@@ -54,8 +54,11 @@ public class FFMpegProcessor extends VideoProcessor
    {
       super(processingJob);
       
+      // Create last ffmpeg output lines LRU
       lastLineOutput = new LinkedHashMap<Integer, String>()
       {
+         private static final long serialVersionUID = 2103610185557147898L;
+
          @Override
          protected boolean removeEldestEntry(Entry<Integer, String> eldest)
          {

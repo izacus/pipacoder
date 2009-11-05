@@ -20,8 +20,6 @@
 
 package org.kiberpipa.coder.jobs;
 
-import java.util.LinkedHashMap;
-
 import org.kiberpipa.coder.Database;
 import org.kiberpipa.coder.enums.JobStates;
 import org.kiberpipa.coder.formats.OutputFormat;
@@ -86,6 +84,13 @@ public class Job
    public void start()
    {
       this.videoProcessor.start();
+   }
+   
+   public void stop()
+   {
+      this.videoProcessor.stop();
+      
+      this.fail("Cancelled by user.");
    }
    
    public void setState(JobStates state)
