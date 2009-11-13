@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import org.kiberpipa.coder.formats.FormatManager;
 import org.kiberpipa.coder.jobs.JobManager;
+import org.kiberpipa.coder.userinterfaces.WebInterface;
 
 /**
  * @author Jernej Virag
@@ -34,6 +35,8 @@ public class Main
       FormatManager formatManager = FormatManager.getInstance();
       
       JobManager jobManager = JobManager.getInstance();
-      jobManager.addJob("test.ogg", formatManager.getFormatWithId(1));
+      
+      // Start web interface
+      WebInterface webInt = new WebInterface(Integer.parseInt(Configuration.getValue("webport")));
    }
 }
