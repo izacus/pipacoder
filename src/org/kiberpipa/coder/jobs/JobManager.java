@@ -27,7 +27,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.kiberpipa.coder.Database;
-import org.kiberpipa.coder.enums.JobStates;
 import org.kiberpipa.coder.formats.OutputFormat;
 
 public class JobManager implements Runnable

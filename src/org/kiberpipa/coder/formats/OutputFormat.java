@@ -27,38 +27,37 @@ package org.kiberpipa.coder.formats;
  */
 public class OutputFormat
 {
-	 private int id;
-	
-     private String name;
-     private String fileAppendix;
+   private int id;
+
+   private String name;
+   private String fileAppendix;
+   
+   // VIDEO Parameters
+   private String videoFormat;
+   private int videoResolutionX;
+   private int videoResolutionY;
+   private int videoBitrate;
      
-     // VIDEO Parameters
-     private String videoFormat;
-     private int videoResolutionX;
-     private int videoResolutionY;
-     private int videoBitrate;
+   // AUDIO Parameters
+   private String audioFormat;
+   private int audioChannels;
+   private int audioSamplerate;
+   private int audioBitrate;
      
-     // AUDIO Parameters
-     private String audioFormat;
-     private int audioChannels;
-     private int audioSamplerate;
-     private int audioBitrate;
-     
-     public OutputFormat(int id,
-    		 			 String name,
-                         String appendix,
-                         String vFormat,
-                         int vResolutionX,
-                         int vResolutionY,
-                         int vBitrate,
-                         String aFormat,
-                         int aChannels,
-                         int aSamplerate,
-                         int aBitrate)
-     {
-    	this.id = id;
-    	 
-    	this.name = name; 
+   public OutputFormat(int id,
+ 		 			        String name,
+                       String appendix,
+                       String vFormat,
+                       int vResolutionX,
+                       int vResolutionY,
+                       int vBitrate,
+                       String aFormat,
+                       int aChannels,
+                       int aSamplerate,
+                       int aBitrate)
+   {
+        this.id = id;
+        this.name = name; 
     	 
         this.fileAppendix = appendix;
         
@@ -71,11 +70,11 @@ public class OutputFormat
         this.audioChannels = aChannels;
         this.audioBitrate = aBitrate;
         this.audioSamplerate = aSamplerate;
-     }
+   }
 
    public String getFileAppendix()
    {
-      return fileAppendix;
+     return fileAppendix;
    }
 
    public String getVideoFormat()

@@ -26,6 +26,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
+/**
+ * Manages settings written in the coder configuration file
+ * @author Jernej
+ *
+ */
 public class Configuration 
 {
 	private static HashMap<String, String> configurationOptions = null;
@@ -38,6 +43,9 @@ public class Configuration
 		parseConfig();
 	}
 	
+	/**
+	 * Parses pipacoder.conf file and stores key/values into hashmap
+	 */
 	private static void parseConfig()
 	{
 		try 
@@ -69,9 +77,13 @@ public class Configuration
 		}
 	}
 	
+	/**
+	 * Retrieves setting value 
+	 * @param identifier setting name
+	 * @return setting value
+	 */
 	public static String getValue(String identifier)
-	{
-		
+	{		
 		return configurationOptions.get(identifier);
 	}
 }

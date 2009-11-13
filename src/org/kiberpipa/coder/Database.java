@@ -30,10 +30,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import org.kiberpipa.coder.enums.JobStates;
 import org.kiberpipa.coder.formats.FormatManager;
 import org.kiberpipa.coder.formats.OutputFormat;
 import org.kiberpipa.coder.jobs.Job;
+import org.kiberpipa.coder.jobs.JobStates;
 
 /**
  * @author Jernej
@@ -43,6 +43,8 @@ public class Database
 {
    private static File databaseFile = null;
    
+   private static Object insertMonitor = null;  // usage of last_row_id can cause a race condition when inserting several things at once
+                                                // therefore mutex is enforced
 	static
 	{
 	   // Load SQLite JDBC driver
@@ -52,7 +54,7 @@ public class Database
       } 
       catch (ClassNotFoundException e) 
       {
-         System.err.println("Missing sqlite-jdbc library, make sure it's present!");
+         System.err.println("Missing sqlite-jdbc library, make sure it is present!");
          System.exit(-3);
       }
 	   
@@ -65,6 +67,8 @@ public class Database
 			createDatabase();
 		}
 		
+		insertMonitor = new Object();
+		
 		System.out.println("Database initialized.");
 	}
 
@@ -75,7 +79,7 @@ public class Database
 	}
 	
 	/**
-	 * Creates SQLite database to store data 
+	 * Creates SQLite database file and structure to store data
 	 */
 	private static void createDatabase() 
 	{
@@ -105,25 +109,25 @@ public class Database
 			// Create table for formats
 			statement.executeUpdate("CREATE TABLE formats (" +
 									      "id  			   INTEGER PRIMARY KEY, " +		// Format ID
-									      "name	 		   TEXT NOT NULL, " +				
-									      "appendix		TEXT NOT NULL UNIQUE, " +
-									      "videoFormat 	TEXT, " +
-									      "videoX			INTEGER, " +
+									      "name	 		   TEXT NOT NULL, " +	         // Visible name			
+									      "appendix		TEXT NOT NULL UNIQUE, " +     // File name appendix
+									      "videoFormat 	TEXT, " +                     // Output video format
+									      "videoX			INTEGER, " +                  // Output video resolution
 									      "videoY 		   INTEGER, " +
-									      "videoBitrate	INTEGER, " +
-									      "audioFormat	TEXT, " +
-									      "audioChannels	INTEGER, " +
-									      "audioSamplerate INTEGER, " +
-									      "audioBitrate	INTEGER);");
+									      "videoBitrate	INTEGER, " +                  // Target output video bitrate
+									      "audioFormat	TEXT, " +                     // Output audio format
+									      "audioChannels	INTEGER, " +                  // Number of output audio channels
+									      "audioSamplerate INTEGER, " +                // Samplerate
+									      "audioBitrate	INTEGER);");                  // Bitrate
 			
 			// Create table for jobs
 			statement.executeUpdate("CREATE TABLE jobs (" +
 									      "id				     INTEGER PRIMARY KEY, " +
 									      "inputFilename	     TEXT NOT NULL, " +
 									      "outputFilename	  TEXT NOT NULL, " +
-									      "fmt_id			     INTEGER NOT NULL, " +
-									      "state			     TEXT NOT NULL, " +
-									      "message            TEXT DEFAULT NULL);");
+									      "fmt_id			     INTEGER NOT NULL, " +    // Target output format ID
+									      "state			     TEXT NOT NULL, " +       // Current job state
+									      "message            TEXT DEFAULT NULL);");   // Job state message (eg. failure cause)
 			
 			// Current version of SQLite JDBC driver doesn't support SQLite foreign keys, so instead
 			// a trigger is used to enforce cascaded deletion
@@ -159,7 +163,7 @@ public class Database
 	 */
 	
 	/**
-	 * Retrieves list of known output formats from SQLite database
+	 * Retrieves list of known output formats from database
 	 * @return List of known formats, empty list if there aren't any or error occured
 	 */
 	public static ArrayList<OutputFormat> getFormats()
@@ -218,64 +222,65 @@ public class Database
 	 * @param format output format to add
 	 * @throws SQLException if addition to database fails.
 	 */
-	public static synchronized void addFormat(OutputFormat format) throws SQLException
+	public static void addFormat(OutputFormat format) throws SQLException
 	{
 	   Connection dbConn = null;
 	   
-	   try
-	   {
-	      dbConn = connectSQLite();
-	      
-	      dbConn.setAutoCommit(false);
-	      
-	      PreparedStatement statement = dbConn.prepareStatement("INSERT INTO formats" +
-	      		                                                "(name, appendix, videoFormat, videoX, videoY, videoBitrate, audioFormat, audioChannels, audioSamplerate, audioBitrate)" +
-	      		                                                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-	      
-	      statement.setString(1, format.getName());
-	      statement.setString(2, format.getFileAppendix());
-	      // Video
-	      statement.setString(3, format.getVideoFormat());
-	      statement.setInt(4, format.getVideoResX());
-	      statement.setInt(5, format.getVideoResY());
-	      statement.setInt(6, format.getVideoBitrate());
-	      // Audio
-	      statement.setString(7, format.getAudioFormat());
-	      statement.setInt(8, format.getAudioChannels());
-	      statement.setInt(9, format.getAudioSamplerate());
-	      statement.setInt(10, format.getAudioBitrate());
-	      
-	      statement.executeUpdate();
-
-	      dbConn.commit();
-	      
-	      // Get retrieved key
-         statement = dbConn.prepareStatement("SELECT last_insert_rowid();");
-	      
-	      ResultSet rowId = statement.executeQuery();
-	      rowId.next();
-	      
-	      int id = rowId.getInt(1);
-	      
-	      
-	      format.setId(id);
-	      
-	      System.out.println("Succesfully saved format " + format.getName() + " with id " + format.getId());
-	   }
-	   catch(SQLException e)
-	   {
-	      throw e;
-	   }
-	   finally
-	   {
-	      if (dbConn != null)
-            try
-            {
-               dbConn.close();
-            } 
-	         catch (SQLException e)
-            {}
-	   }
+	   synchronized (insertMonitor)
+      {
+	        try
+	         {
+	            dbConn = connectSQLite();
+	            dbConn.setAutoCommit(false);
+	            
+	            PreparedStatement statement = dbConn.prepareStatement("INSERT INTO formats" +
+	                                                                  "(name, appendix, videoFormat, videoX, videoY, videoBitrate, audioFormat, audioChannels, audioSamplerate, audioBitrate)" +
+	                                                                  " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+	            
+	            statement.setString(1, format.getName());
+	            statement.setString(2, format.getFileAppendix());
+	            // Video
+	            statement.setString(3, format.getVideoFormat());
+	            statement.setInt(4, format.getVideoResX());
+	            statement.setInt(5, format.getVideoResY());
+	            statement.setInt(6, format.getVideoBitrate());
+	            // Audio
+	            statement.setString(7, format.getAudioFormat());
+	            statement.setInt(8, format.getAudioChannels());
+	            statement.setInt(9, format.getAudioSamplerate());
+	            statement.setInt(10, format.getAudioBitrate());
+	            
+	            statement.executeUpdate();
+	   
+	            dbConn.commit();
+	            
+	            // Get retrieved key
+	            statement = dbConn.prepareStatement("SELECT last_insert_rowid();");
+	            
+	            ResultSet rowId = statement.executeQuery();
+	            rowId.next();
+	            
+	            int id = rowId.getInt(1);
+	            
+	            format.setId(id);
+	            
+	            System.out.println("Succesfully saved format " + format.getName() + " with id " + format.getId());
+	         }
+	         catch(SQLException e)
+	         {
+	            throw e;
+	         }
+	         finally
+	         {
+	            if (dbConn != null)
+	               try
+	               {
+	                  dbConn.close();
+	               } 
+	               catch (SQLException e)
+	               {}
+	         }
+      }
 	}
 	
 	public static void removeFormat(int formatId)
@@ -372,6 +377,10 @@ public class Database
 	      return jobs;
 	}
 	
+	/**
+	 * Updates <b>only</b> state of job in the database
+	 * @param job 
+	 */
 	public static void updateJobState(Job job)
 	{
       Connection dbConn = null;
@@ -405,52 +414,60 @@ public class Database
       }
 	}
 	
-	public static synchronized void addJob(Job job) throws SQLException
+	/**
+	 * Adds new job to the database
+	 * @param job
+	 * @throws SQLException if insertion fails
+	 */
+	public static void addJob(Job job) throws SQLException
 	{
-	     Connection dbConn = null;
-	      
-	      try
-	      {
-	         dbConn = connectSQLite();
-	         dbConn.setAutoCommit(false);
-	         
-	         PreparedStatement statement = dbConn.prepareStatement("INSERT INTO jobs (inputFilename, outputFilename, fmt_id, state)" +
-	         		                                                "VALUES (?, ?, ?, ?);");
-	         
-	         statement.setString(1, job.getInputFileName());
-	         statement.setString(2, job.getOutputFileName());
-	         statement.setInt(3, job.getOutputFormat().getId());
-	         statement.setString(4, job.getState().toString());
-	         
-	         statement.executeUpdate();
-	         
-	         dbConn.commit();
-	         
-	         statement = dbConn.prepareStatement("SELECT last_insert_rowid();");
-	         
-	         ResultSet rowId = statement.executeQuery();
-	         rowId.next();
-	         
-	         int id = rowId.getInt(1);
-	         job.setId(id);
-	         
-	      }
+	   synchronized (insertMonitor)
+      {
+        Connection dbConn = null;
+        
+        try
+        {
+            dbConn = connectSQLite();
+            dbConn.setAutoCommit(false);
+           
+            PreparedStatement statement = dbConn.prepareStatement("INSERT INTO jobs (inputFilename, outputFilename, fmt_id, state)" +
+                                                                  "VALUES (?, ?, ?, ?);");
+            
+            statement.setString(1, job.getInputFileName());
+            statement.setString(2, job.getOutputFileName());
+            statement.setInt(3, job.getOutputFormat().getId());
+            statement.setString(4, job.getState().toString());
+            
+            statement.executeUpdate();
+            
+            dbConn.commit();
+            
+            statement = dbConn.prepareStatement("SELECT last_insert_rowid();");
+            
+            ResultSet rowId = statement.executeQuery();
+            rowId.next();
+            
+            int id = rowId.getInt(1);
+            job.setId(id);
+            
+        }
         catch (SQLException e)
-         {
+        {
             throw e;
-         }
-         finally
-         {
-            if (dbConn != null)
-            {
-               try
-               {
-                  dbConn.close();
-               }
-               catch (SQLException e)
-               {};
-            }
-         }
+        }
+        finally
+        {
+           if (dbConn != null)
+           {
+              try
+              {
+                 dbConn.close();
+              }
+              catch (SQLException e)
+              {};
+           }
+        }
+      }
 
 	}
 }

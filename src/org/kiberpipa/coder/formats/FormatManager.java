@@ -31,6 +31,10 @@ public class FormatManager
 	// This is a singleton class
 	private static FormatManager instance = null;
 	
+	/**
+	 * 
+	 * @return singleton instance of the format manager
+	 */
 	public static FormatManager getInstance()
 	{
 		if (FormatManager.instance == null)
@@ -42,6 +46,7 @@ public class FormatManager
 		return FormatManager.instance;
 	}
 	
+	// Holds all known formats
 	private HashMap<Integer, OutputFormat> formats = null;
 	
 	private FormatManager()
@@ -56,8 +61,7 @@ public class FormatManager
 		   formats.put(format.getId(), format);
 		}
 		
-		System.out.println("Loaded " + formatList.size() + " known output formats from database.");
-		
+		System.out.println("Loaded " + formatList.size() + " known output formats from database.");		
 	}
 	
 	/**
@@ -72,23 +76,21 @@ public class FormatManager
 	 * @param audioChannels		Number of output audio channels
 	 * @param audioSamplerate	Encoded audio samplerate
 	 * @param audioBitrate		Encoded audio bitrate
-	 * @return					   ID of the new format
+	 * @return					   ID of the new format or -1 if addition failed
 	 */
 	public int addFormat(String name,
-						 String fileAppendix,
-						 String videoFormat,
-						 int videoX,
-						 int videoY,
-						 int videoBitrate,
-						 String audioFormat,
-						 int audioChannels,
-						 int audioSamplerate,
-						 int audioBitrate)
+						      String fileAppendix,
+						      String videoFormat,
+						      int videoX,
+						      int videoY,
+						      int videoBitrate,
+						      String audioFormat,
+						      int audioChannels,
+						      int audioSamplerate,
+						      int audioBitrate)
 	{
 		// Format ID is set by the database query
-		int id = -1;
-		
-		OutputFormat newFormat = new OutputFormat(id, 
+		OutputFormat newFormat = new OutputFormat(0, 
 												            name, 
 												            fileAppendix, 
 												            videoFormat, 
@@ -113,11 +115,16 @@ public class FormatManager
          return -1;
       }
 		
-		this.formats.put(id, newFormat);
+		this.formats.put(newFormat.getId(), newFormat);
 		
-		return id;
+		return newFormat.getId();
 	}
 	
+	/**
+	 * Removes a known format from known format lists
+	 * @param id  
+	 * @throws Exception if invalid format id was passed
+	 */
 	public void deleteFormat(int id) throws Exception
 	{
 		// Check if format exists
@@ -134,6 +141,11 @@ public class FormatManager
 		}
 	}
 	
+	/**
+	 * 
+	 * @param id Format id
+	 * @return OutputFormat object corresponding to format ID
+	 */
 	public OutputFormat getFormatWithId(int id)
 	{
 	   return formats.get(id);
