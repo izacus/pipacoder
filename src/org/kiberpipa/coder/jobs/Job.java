@@ -137,8 +137,6 @@ public class Job
    
    public void setProgress(float progress)
    {
-	  System.out.println(progress); 
-	   
       this.progress = progress;
    }
    

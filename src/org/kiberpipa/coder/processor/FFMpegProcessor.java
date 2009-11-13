@@ -29,6 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.kiberpipa.coder.Configuration;
+import org.kiberpipa.coder.Log;
 import org.kiberpipa.coder.formats.OutputFormat;
 import org.kiberpipa.coder.jobs.Job;
 import org.kiberpipa.coder.jobs.JobStates;
@@ -112,15 +113,13 @@ public class FFMpegProcessor extends VideoProcessor
    {
       String execString = commandString();
       
-      System.out.println(execString);
-      
       try
       {
          p = Runtime.getRuntime().exec(execString);
       } 
       catch (IOException e)
       {
-         System.err.println("Failed to find ffmpeg executable!");
+         Log.error("Failed to find ffmpeg executable!");
          job.fail("Failed to find ffmpeg executable.");
          return;
       }
@@ -183,7 +182,6 @@ public class FFMpegProcessor extends VideoProcessor
       {
          // Calculate duration
          videoDuration = Integer.parseInt(durationMatcher.group(1)) * 3600 + Integer.parseInt(durationMatcher.group(2)) * 60 + Integer.parseInt(durationMatcher.group(3));
-         System.out.println("Duration of video is " + videoDuration + " seconds.");
          
          return;
       }

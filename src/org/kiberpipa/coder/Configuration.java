@@ -72,7 +72,7 @@ public class Configuration
 		} 
 		catch (IOException e) 
 		{
-			System.err.println("Error reading pipacoder.conf.");
+			Log.error("Error reading pipacoder.conf.");
 			System.exit(-1);
 		}
 	}

@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.kiberpipa.coder.Database;
+import org.kiberpipa.coder.Log;
 import org.kiberpipa.coder.formats.OutputFormat;
 
 public class JobManager implements Runnable
@@ -130,7 +131,7 @@ public class JobManager implements Runnable
       }
       catch (Exception e)
       {
-         System.err.println(e.getMessage());
+         Log.error(e.getMessage());
          return -1;
       }
       
@@ -140,7 +141,7 @@ public class JobManager implements Runnable
       }
       catch(SQLException e)
       {
-         System.err.println("Failed to add job: " + e.getMessage());
+         Log.error("Failed to add job: " + e.getMessage());
          
          return -1;
       }
@@ -157,4 +158,11 @@ public class JobManager implements Runnable
       return newJob.getId();
    }
    
+   public ArrayList<Job> getJobs()
+   {
+      ArrayList<Job> jobs = new ArrayList<Job>();
+      jobs.addAll(this.jobs);
+      
+      return jobs;
+   }
 }
