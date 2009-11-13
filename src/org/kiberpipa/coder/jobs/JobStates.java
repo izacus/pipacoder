@@ -18,7 +18,7 @@
     Copyright© 2009 Jernej Virag
   */
 
-package org.kiberpipa.coder.enums;
+package org.kiberpipa.coder.jobs;
 
 public enum JobStates
 {

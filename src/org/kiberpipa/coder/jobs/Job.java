@@ -21,7 +21,6 @@
 package org.kiberpipa.coder.jobs;
 
 import org.kiberpipa.coder.Database;
-import org.kiberpipa.coder.enums.JobStates;
 import org.kiberpipa.coder.formats.OutputFormat;
 import org.kiberpipa.coder.processor.FFMpegProcessor;
 import org.kiberpipa.coder.processor.VideoProcessor;
@@ -35,7 +34,6 @@ public class Job
    private VideoProcessor videoProcessor;
    private String outputFileName;
    private String failMessage = null;
-   
    
    private JobStates jobState;
    private float progress;
@@ -51,7 +49,8 @@ public class Job
       this(id, fileName, outputFormat, null);
    }
    
-   public Job(int id, String fileName, OutputFormat outputFormat, VideoProcessor videoProcessor) throws Exception
+   // TODO: implement other processor support, until then this is private
+   private Job(int id, String fileName, OutputFormat outputFormat, VideoProcessor videoProcessor) throws Exception
    {
       if (outputFormat == null)
       {
@@ -86,6 +85,9 @@ public class Job
       this.videoProcessor.start();
    }
    
+   /**
+    * Stops processing, sets job status to FAILED
+    */
    public void stop()
    {
       this.videoProcessor.stop();
@@ -93,11 +95,20 @@ public class Job
       this.fail("Cancelled by user.");
    }
    
+   /**
+    * Changes job state (including the database)
+    * @param state
+    */
    public void setState(JobStates state)
    {
       setState(state, true);
    }
    
+   /**
+    * Changes job state
+    * @param state new state
+    * @param updateDB update database record or not (false is used for eg. when loading from database)
+    */
    public void setState(JobStates state, boolean updateDB)
    {
       this.jobState = state;
@@ -106,6 +117,17 @@ public class Job
       {
          Database.updateJobState(this);
       }
+   }
+   
+   /**
+    * Sets job state to FAILED and updates failure message
+    * It does not stop the processor
+    * @param message
+    */
+   public void fail(String message)
+   {
+      this.failMessage = message;
+      this.setState(JobStates.FAILED, true);
    }
    
    public JobStates getState()
@@ -148,12 +170,6 @@ public class Job
    public void setId(int id)
    {
       this.id = id;
-   }
-   
-   public void fail(String message)
-   {
-      this.failMessage = message;
-      this.setState(JobStates.FAILED, true);
    }
    
    public String getFailMessage()

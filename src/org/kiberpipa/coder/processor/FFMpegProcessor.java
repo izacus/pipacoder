@@ -29,9 +29,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.kiberpipa.coder.Configuration;
-import org.kiberpipa.coder.enums.JobStates;
 import org.kiberpipa.coder.formats.OutputFormat;
 import org.kiberpipa.coder.jobs.Job;
+import org.kiberpipa.coder.jobs.JobStates;
 
 public class FFMpegProcessor extends VideoProcessor
 {
@@ -55,6 +55,7 @@ public class FFMpegProcessor extends VideoProcessor
       super(processingJob);
       
       // Create last ffmpeg output lines LRU
+      // It will hold last 10 lines of unrecognised ffmpeg output
       lastLineOutput = new LinkedHashMap<Integer, String>()
       {
          private static final long serialVersionUID = 2103610185557147898L;
@@ -67,11 +68,15 @@ public class FFMpegProcessor extends VideoProcessor
       };
    }
    
+   /**
+    * Builds ffmpeg executable command line string
+    * @return
+    */
    private String commandString()
    {
       StringBuilder string = new StringBuilder();
       
-      string.append(Configuration.getValue("ffmpegdir") + "ffmpeg.exe -y");  // -y to overwrite possibly existing output
+      string.append(Configuration.getValue("ffmpegdir") + "ffmpeg.exe -y");            // -y to overwrite possibly existing output
       string.append(" -threads " + (Runtime.getRuntime().availableProcessors() + 1));  // Number of cores + 1 threads
       
       // Input file name
@@ -81,6 +86,7 @@ public class FFMpegProcessor extends VideoProcessor
       
       // Video options
       string.append(" -vcodec " + outputFormat.getVideoFormat());
+      // Sets bitrate with two parameters (certain codecs use the first, others the second)
       string.append(" -b " + outputFormat.getVideoBitrate() + " -bt " + outputFormat.getVideoBitrate());
       string.append(" -s " + outputFormat.getVideoResolution());
       
@@ -111,9 +117,11 @@ public class FFMpegProcessor extends VideoProcessor
       try
       {
          p = Runtime.getRuntime().exec(execString);
-      } catch (IOException e)
+      } 
+      catch (IOException e)
       {
          System.err.println("Failed to find ffmpeg executable!");
+         job.fail("Failed to find ffmpeg executable.");
          return;
       }
       
@@ -144,8 +152,6 @@ public class FFMpegProcessor extends VideoProcessor
          ProcessLine(line);
       }
       
-      System.out.println("Transcoding done, exit code was " + p.exitValue());
-      
       if (p.exitValue() != 0)
       {
          StringBuilder failMessage = new StringBuilder();
@@ -164,6 +170,10 @@ public class FFMpegProcessor extends VideoProcessor
       }
    }
    
+   /**
+    * Processes a single line of ffmpeg output looking for known patterns
+    * @param line
+    */
    private void ProcessLine(String line)
    {
       // Check for Duration string
@@ -195,9 +205,11 @@ public class FFMpegProcessor extends VideoProcessor
    }
 
    @Override
+   /**
+    * Kills transcoding process. Does not update job state.
+    */
    public void stop()
    {
       p.destroy();
-      job.setState(JobStates.FAILED);
    }
 }
