@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.kiberpipa.coder.Database;
+import org.kiberpipa.coder.Log;
 
 public class FormatManager 
 {
@@ -61,7 +62,7 @@ public class FormatManager
 		   formats.put(format.getId(), format);
 		}
 		
-		System.out.println("Loaded " + formatList.size() + " known output formats from database.");		
+		Log.info("Loaded " + formatList.size() + " known output formats from database.");		
 	}
 	
 	/**
@@ -149,5 +150,14 @@ public class FormatManager
 	public OutputFormat getFormatWithId(int id)
 	{
 	   return formats.get(id);
+	}
+	
+	public ArrayList<OutputFormat> getFormats()
+	{
+	   ArrayList<OutputFormat> formatList = new ArrayList<OutputFormat>();
+	   
+	   formatList.addAll(formats.values());
+	   
+	   return formatList;
 	}
 }

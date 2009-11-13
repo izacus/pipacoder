@@ -54,7 +54,7 @@ public class Database
       } 
       catch (ClassNotFoundException e) 
       {
-         System.err.println("Missing sqlite-jdbc library, make sure it is present!");
+         Log.error("Missing sqlite-jdbc library, make sure it is present!");
          System.exit(-3);
       }
 	   
@@ -69,7 +69,7 @@ public class Database
 		
 		insertMonitor = new Object();
 		
-		System.out.println("Database initialized.");
+		Log.info("Database initialized.");
 	}
 
 	
@@ -83,7 +83,7 @@ public class Database
 	 */
 	private static void createDatabase() 
 	{
-		System.out.println("Database file not found, creating new one...");
+		Log.info("Database file not found, creating new one...");
 		
 		// Create database file and check if directory is writable
 		
@@ -93,7 +93,7 @@ public class Database
 		}
 		catch (IOException e)
 		{
-			System.err.println("Could not create new database file, make sure the dbdir is writable by this process!");
+			Log.error("Could not create new database file, make sure the dbdir is writable by this process!");
 			System.exit(-2);
 		}
 		
@@ -141,7 +141,7 @@ public class Database
 		} 
 		catch (SQLException e) 
 		{
-			System.err.println("Error while creating database, check that the destination directory is writable!");
+			Log.error("Error while creating database, check that the destination directory is writable!");
 			System.exit(-4);
 		}
 		finally
@@ -199,7 +199,7 @@ public class Database
 	   }
 	   catch (SQLException e)
 	   {
-	      System.err.println("Error while retrieving saved formats: " + e.getMessage());
+	      Log.error("Error while retrieving saved formats: " + e.getMessage());
 	   }
 	   finally
 	   {
@@ -264,7 +264,7 @@ public class Database
 	            
 	            format.setId(id);
 	            
-	            System.out.println("Succesfully saved format " + format.getName() + " with id " + format.getId());
+	            Log.info("Succesfully saved format " + format.getName() + " with id " + format.getId());
 	         }
 	         catch(SQLException e)
 	         {
@@ -299,7 +299,7 @@ public class Database
 	      }
 	      catch (SQLException e)
 	      {
-	         System.err.println("Failed to delete format id " + formatId);
+	         Log.error("Failed to delete format id " + formatId);
 	      }
 	      finally
 	      {
@@ -353,11 +353,11 @@ public class Database
 	      }
 	      catch (SQLException e)
 	      {
-	         System.err.println("Error while retrieving stored jobs: " + e.getMessage());
+	         Log.error("Error while retrieving stored jobs: " + e.getMessage());
 	      }
 	      catch (Exception e)
 	      {
-	         System.err.println(e.getMessage());
+	         Log.error(e.getMessage());
 	      }
 	      finally
 	      {
@@ -372,7 +372,7 @@ public class Database
 	         }
 	      }
 
-	      System.out.println("Loaded " + jobs.size() + " jobs from database.");
+	      Log.info("Loaded " + jobs.size() + " jobs from database.");
 	      
 	      return jobs;
 	}
@@ -398,7 +398,7 @@ public class Database
       }
       catch (SQLException e)
       {
-         System.err.println("Failed to update database job state! Database is inconsistent with process status - " + e.getMessage());
+         Log.error("Failed to update database job state! Database is inconsistent with process status - " + e.getMessage());
       }
       finally
       {
