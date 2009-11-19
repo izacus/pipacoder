@@ -1,0 +1,65 @@
+body 
+{
+	margin: 0px;
+	padding: 0px;
+	background-color: #DDDDDD;	
+}
+
+#page-container
+{
+	width:770px;
+	margin: 20px auto;
+	padding: 20px;
+	background-color: #FFFFFF;
+}
+
+h1
+{
+	margin: 0px;
+	padding: 0px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 140%;
+}
+
+#header
+{
+	height: 90px;
+	clear: both;
+}
+
+#footer
+{	
+	height: 30px;
+	text-align: center;
+	vertical-align: middle;
+	clear: both;
+}
+
+#newjob
+{
+	position: relative;
+	clear: both;
+	width: 100%;	
+}
+
+#newjob-labels
+{
+	width: 150px;
+	float: left;
+	text-align: right;
+	font-weight: bold;
+	position: absolute;
+}
+
+#newjob-forms
+{
+	margin-left: 5px;
+	float: left;
+	position: absolute;
+	left: 150px;
+}
+
+.floatfix
+{
+	clear: both;
+}
