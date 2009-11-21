@@ -4,36 +4,82 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<title>PipaCoder control panel</title>
 		<link rel="stylesheet" href="layout.css">
+		<script language="JavaScript" type="text/javascript" src="jquery-1.3.2.js"></script>
+		<script language="JavaScript" type="text/javascript" src="interface.js"></script>
 	</head>
 	<body>
 		<div id="page-container">
 			<div id="header">
 				<h1>PipaCoder</h1>
 			</div>
+			<!-- Create new job part of the document -->
 			<div id="newjob">
-				<h1>New job</h1>
-				
-				<div id="newjob-labels">
-					Encode file:<br>
-					Format presets:<br>
-					Target formats:<br>
+				<div>
+					<!-- Upper left corner, with filename/presetname -->
+					<div id="newjob-ul">
+						<div class="newjob-labels">
+							Encode file: <br>
+							Format presets: <br>
+						</div>
+						<div id="newjob-selections">
+							<select id="select-filename" class="newjob-select">
+								<option>Loading...</option>
+							</select>
+							<br>
+							<select id="select-preset" class="newjob-select">
+								<option>Loading...</option>
+							</select>							
+						</div>
+					</div>
+					<!-- Upper right corner with links so more settings pages -->
+					<div id="newjob-ur">
+						<b>Manage format options</b> <br>
+						<b>Manage presets</b>
+					</div>
+					<div class="floatfix"></div>
 				</div>
-				<div id="newjob-forms">
-					<select id="filename">
-						<option>traktor.mp4</option>
-					</select>
-					<br>
-					<select id="preset">
-						<option>Standard preset</option>
-					</select>
+				<!-- Format selection boxes -->
+				<div>
+					<div class="newjob-labels">
+						Target formats:
+					</div>
+					<div class="formats-box">
+						<div class="box-title">All encoding options</div>
+						<div>
+							<select name="allformatlist" id="allformatlist" class="box-list" multiple="multiple" size="6">
+								<option>Loading...</option>
+							</select>
+						</div>
+					</div>
+					<div id="format-buttons">
+						<button type="button" id="add" class="button">&gt;</button><br>
+						<button type="button" id="remove" class="button">&lt;</button>
+					</div>
+					
+					<div class="formats-box">
+						<div class="box-title">Encode into</div>
+						<div>
+							<select name="selectedformatlist" id="selectedformatlist" class="box-list" multiple="multiple" size="6">
+							</select>
+						</div>
+					</div>
+					<div class="encode-button-box">
+						<button type="button" class="encode-button">Add to encoder queue</button>
+					</div>
 				</div>
-				<div class="floatfix"></div>
+			
+			<!-- Table containing current job list -->
+			<table class="job-table" id="jobs">
+			</table>
+			
 			</div>
+			
 			<div id="footer">
 				<h6>
 					This is free software. Copyright Jernej Virag 2009.
 				</h6>
 			</div>
+			
 		</div>
 	</body>
 </html>
