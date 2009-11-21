@@ -713,6 +713,7 @@ public class NanoHTTPD
    {
       StringTokenizer st = new StringTokenizer("htm		text/html "
             + "html		text/html " + "txt		text/plain " + "asc		text/plain "
+            + "css      text/css "  + "js       text/javascript "
             + "gif		image/gif " + "jpg		image/jpeg " + "jpeg		image/jpeg "
             + "png		image/png " + "mp3		audio/mpeg " + "m3u		audio/mpeg-url "
             + "pdf		application/pdf " + "doc		application/msword "
