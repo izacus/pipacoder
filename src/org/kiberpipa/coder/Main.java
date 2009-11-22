@@ -19,7 +19,6 @@ package org.kiberpipa.coder;
 
 import java.io.IOException;
 
-import org.kiberpipa.coder.formats.FormatManager;
 import org.kiberpipa.coder.jobs.JobManager;
 import org.kiberpipa.coder.userinterfaces.WebInterface;
 
@@ -32,10 +31,7 @@ public class Main
 
    public static void main(String[] args) throws IOException
    {    	   
-      FormatManager formatManager = FormatManager.getInstance();
-      
-      JobManager jobManager = JobManager.getInstance();
-      
+      JobManager.getInstance();
       // Start web interface
       WebInterface webInt = new WebInterface(Integer.parseInt(Configuration.getValue("webport")));
    }
