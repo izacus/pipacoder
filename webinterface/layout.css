@@ -1,9 +1,11 @@
+/*
+	General properties for all files
+*/
 body 
 {
 	margin: 0px;
 	padding: 0px;
 	background-color: #DDDDDD;
-	
 	font-family: Arial, Helvetica, sans-serif;	
 }
 
@@ -23,6 +25,15 @@ h1
 	font-size: 140%;
 }
 
+h2
+{
+	margin: 0px;
+	padding: 0px;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 110%;
+	color: #222;
+}
+
 #header
 {
 	height: 90px;
@@ -37,6 +48,14 @@ h1
 	clear: both;
 }
 
+.floatfix
+{
+	clear:both;
+}
+
+/*
+ *	Main control panel styles 
+ */
 #newjob
 {
 	
@@ -45,8 +64,7 @@ h1
 #newjob-ul
 {
 	float:left;
-	width: 50%;
-		
+	width: 50%;		
 	line-height: 120%;
 }
 
@@ -140,15 +158,64 @@ h1
 .job-table
 {
 	margin-top: 40px;
-	
+	padding-left: 15px;
 	width:100%;
 	border: solid 1px;
-	
 	text-align: left;
-	padding-left: 15px;
 }
 
-.floatfix
+
+/*
+ * Format editor styles
+ */
+
+h3
 {
-	clear:both;
+	font: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 90%;
+}
+
+.format-labels
+{
+	width: 300px;
+	text-align: right;
+	
+	padding-right: 5px;
+	padding-left: 5px;
+
+	line-height: 20px;
+	vertical-align: middle;
+
+	text-size: 90%;
+	
+	clear: left;
+	float: left;
+}
+
+.format-boxes
+{
+	width: 300px;
+	height: 20px;
+	
+	padding-left:5px;
+	padding-right:5px;
+	
+	float:left;
+	clear:right;
+}
+
+.format-textbox
+{
+	width:200px;
+}
+
+.format-submit
+{
+	text-align: right;
+	
+	margin-top: 15px;
+	margin-bottom: 15px;
+	
+	padding-left: 200px;
+	padding-right: 200px;
 }

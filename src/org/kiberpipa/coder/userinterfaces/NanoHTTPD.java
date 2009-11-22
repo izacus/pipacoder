@@ -214,7 +214,7 @@ public class NanoHTTPD
             {
             }
          }
-      });
+      }, "Web Server");
       t.setDaemon(true);
       t.start();
    }
