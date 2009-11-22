@@ -23,7 +23,10 @@ function()
  */
 function loadInputFiles()
 {
-	$.post("/api/inputfiles", {command: "GET-INPUT-FILES"}, loadInputFilesCB, "json");
+	// Output "loading" text before request
+	$("select#select-filename").html("<option>Loading...</option>");
+	
+	$.get("/api/inputfiles", null, loadInputFilesCB, "json");
 }
 
 /**
@@ -59,16 +62,24 @@ function loadFormatPresetsCB(response)
 
 function loadFormats()
 {
-	$.post("/api/formats", {command: "GET-FORMATS"}, loadFormatsCB, "json");
+	$("select#allformatlist").html("<option>Loading...</option>");
+	$.get("/api/formats", null, loadFormatsCB, "json");
 }
 
 function loadFormatsCB(response)
 {
 	var formatsHTML = '';
 	
-	for (var i = 0; i < response.length; i++)
+	if (response.length == 0)
 	{
-		formatsHTML += '<option>' + response[i].name + '</option>';
+		formatsHTML += '<option> -- NO FORMATS -- </option>';
+	}	
+	else
+	{	
+		for (var i = 0; i < response.length; i++)
+		{
+			formatsHTML += '<option>' + response[i].name + '</option>';
+		}	
 	}
 	
 	$("select#allformatlist").html(formatsHTML);
@@ -81,7 +92,7 @@ function loadJobTable()
 	$("table#jobs").html(tableHTML);
 	
 	// Send load request
-	$.post("/api/jobs", {command: "GET-JOBS"}, loadJobTableCB, "json");
+	$.get("/api/jobs", null, loadJobTableCB, "json");
 }
 
 function loadJobTableCB(response)
@@ -90,7 +101,7 @@ function loadJobTableCB(response)
 	
 	if (response.length == 0)
 	{
-		tableHTML += '<tr><td colspan="4"> -- NO JOBS -- </td></tr>';
+		tableHTML += '<tr><td colspan="4" align="center"> -- NO JOBS -- </td></tr>';
 	}
 	else
 	{
