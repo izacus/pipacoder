@@ -15,7 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with PipaCoder.  If not, see <http://www.gnu.org/licenses/>.
     
-    Copyright© 2009 Jernej Virag
+    Copyrightï¿½ 2009 Jernej Virag
   */
 
 package org.kiberpipa.coder.userinterfaces;
@@ -87,6 +87,10 @@ public class WebInterface extends NanoHTTPD implements UserInterface
             Log.info("[API] Listing jobs...");
             
             responseString = getAllJobsJSON();
+         }
+         else if (command.equals("addformat"))
+         {
+            responseString = addNewFormat(parms);
          }
          
          // Responses are JSON, so return text/javascript MIME type
@@ -195,5 +199,93 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       
       output.setCharAt(output.length() - 1, ']');
       return output.toString();
+   }
+   
+   /**
+    * Adds new known format to database and builds response
+    * @param params  GET parameters of new format
+    * @return response string
+    */
+   private String addNewFormat(Properties params)
+   {
+      Log.info("[API] Adding new format...");
+      
+      int id = -1;
+      String formatName = null;
+      String vFormat = null;
+      int vBitrate = 0;
+      String vResolution = null;
+      String aFormat = null;
+      int aBitrate = 0;
+      int aChannels = 0;
+      int aSampleRate = 0;
+      String suffix = null;
+      
+      // Validation
+      try
+      {
+         if (!params.containsKey("id") ||
+             !params.containsKey("formatname") ||
+             !params.containsKey("vformat") ||
+             !params.containsKey("vbitrate") ||
+             !params.containsKey("vresolution") ||
+             !params.containsKey("aformat") ||
+             !params.containsKey("abitrate") ||
+             !params.containsKey("achannels") || 
+             !params.containsKey("asamplerate") ||
+             !params.containsKey("suffix"))
+         {
+            Log.error("[API] Request for new format denied because of missing parameter.");
+            return getErrorResponse("Missing parameter.");
+         }
+         
+         id = Integer.parseInt(params.getProperty("id"));
+         formatName = params.getProperty("formatname");
+         vFormat = params.getProperty("vformat");
+         vBitrate = Integer.parseInt(params.getProperty("vbitrate"));
+         vResolution = params.getProperty("vresolution");
+         aFormat = params.getProperty("aformat");
+         aBitrate = Integer.parseInt(params.getProperty("abitrate"));
+         aChannels = Integer.parseInt(params.getProperty("achannels"));
+         aSampleRate = Integer.parseInt(params.getProperty("asamplerate"));
+         suffix = params.getProperty("suffix");
+      }
+      catch (NumberFormatException e)
+      {
+         Log.error("[API] Request for new format denied because of invalid parameter.");
+         return getErrorResponse("Invalid parameter.");
+      }
+      
+      // Dereference resolution
+      int videoX = 0;
+      int videoY = 0;
+      
+      try
+      {
+         int xPos = vResolution.indexOf('x');
+         
+         videoX = Integer.parseInt(vResolution.substring(0, xPos));
+         videoY = Integer.parseInt(vResolution.substring(xPos + 1));
+      }
+      catch(Exception e)
+      {
+         Log.error("[API] Request for new format denied because of invalid parameter.");
+         return getErrorResponse("Invalid parameter.");
+      }
+      
+      // Create new format
+      id = FormatManager.getInstance().addFormat(formatName, suffix, vFormat, videoX, videoY, vBitrate, aFormat, aChannels, aSampleRate, aBitrate);
+      
+      if (id == -1)
+      {
+         return getErrorResponse("Failed to add new format.");
+      }
+      
+      return "{ status : 'OK', id : " + id + ", message : 'Format added successfully.' }";
+   }
+      
+   public String getErrorResponse(String message)
+   {
+      return "{ status : 'ERROR', message : '" + message + "' }";
    }
 }
