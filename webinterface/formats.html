@@ -3,9 +3,10 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<title>PipaCoder - Format setup</title>
-		<link rel="stylesheet" href="layout.css">
-		<script type="text/javascript" src="jquery-1.3.2.js"></script>
-		<script type="text/javascript" src="formats.js"></script>
+		<link rel="stylesheet" href="css/layout.css" type="text/css" media="screen" charset="utf-8" />
+		<script type="text/javascript" src="js/jquery-1.3.2.js"></script>
+		<script type="text/javascript" src="js/jquery.validate.js"></script>
+		<script type="text/javascript" src="js/formats.js"></script>
 	</head>
 	<body>
 		<div id="page-container">
@@ -13,37 +14,45 @@
 				<h1>PipaCoder</h1><br>
 				<h2>Format management</h2>
 			</div>
+			<div id="response">Test test test</div>
 			<div>
-				<form name="edit-format">
 				<div class="format-labels">
 					Edit format:
 					<br><br>
 					Format name:
 				</div>
 				<div class="format-boxes">
-					<select name="formatedit" class="format-textbox">
+					<select id="formatedit" name="formatedit" class="format-textbox">
 						<option> - Select one -</option>
 					</select>
 					<br><br>
-					<input type="text" class="format-textbox"></input>
+				<form id="edit-format">
+					<input type="hidden" value="-1" name="id"></input>
+					<input type="text" id="formatname" name="formatname" class="format-textbox"></input>
 				</div>
 				<div class="floatfix"></div>
 				<h3>Video parameters</h3>
 				
 				<div class="format-labels">
+					Video format :
+					<br><br>
 					Bitrate (bps): 
 					<br><br>
 					Resolution (px): 
 				</div>
 				<div class="format-boxes">
-					<input type="text" class="format-textbox"></input>
+					<input type="text" id="vformat" name="vformat" class="format-textbox"></input>
 					<br><br>
-					<input type="text" class="format-textbox"></input>
+					<input type="text" id="vbitrate" name="vbitrate" class="format-textbox"></input>
+					<br><br>
+					<input type="text" id="vresolution" name="vresolution" class="format-textbox"></input>
 				</div>
 				<div class="floatfix"></div>
 				
 				<h3>Audio parameters</h3>
 				<div class="format-labels">
+					Audio format:
+					<br><br>
 					Bitrate (bps): 
 					<br><br>
 					Number of channels:
@@ -51,11 +60,13 @@
 					Samplerate (Hz): 
 				</div>
 				<div class="format-boxes">
-					<input type="text" class="format-textbox"></input>
+					<input type="text" id="aformat" name="aformat" class="format-textbox"></input>
 					<br><br>
-					<input type="text" class="format-textbox"></input>
+					<input type="text" id="abitrate" name="abitrate" class="format-textbox"></input>
 					<br><br>
-					<input type="text" class="format-textbox"></input>
+					<input type="text" id="achannels" name="achannels" class="format-textbox"></input>
+					<br><br>
+					<input type="text" id="asamplerate" name="asamplerate" class="format-textbox"></input>
 				</div>
 				<div class="floatfix"></div>
 				
@@ -64,13 +75,13 @@
 					Filename suffix:
 				</div>				
 				<div class="format-boxes">
-					<input type="text" class="format-textbox"></input>
+					<input type="text" id="suffix" name="suffix" class="format-textbox"></input>
 				</div>
 				<div class="floatfix"></div>
 				
 				<div class="format-submit">
 					<button type="button">Remove</button>
-					<button type="button">Add/update</button>
+					<button type="button" id="addupdatebtn">Add/update</button>
 				</div>
 				</form>
 			</div>

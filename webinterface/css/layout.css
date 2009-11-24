@@ -175,6 +175,27 @@ h3
 	font-size: 90%;
 }
 
+#response
+{
+	display: none;
+	-moz-border-radius: 15px;
+	-webkit-border-radius: 15px;
+	margin-bottom: 15px;
+	height: 60px;
+	line-height: 60px;
+	text-align: center;
+}
+
+.error-response
+{
+	background-color: #FFDDDD;
+}
+
+.success-response
+{
+	background-color: #DDFFDD;
+}
+
 .format-labels
 {
 	width: 300px;
