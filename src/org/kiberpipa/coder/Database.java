@@ -15,7 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with PipaCoder.  If not, see <http://www.gnu.org/licenses/>.
     
-    Copyright© 2009 Jernej Virag
+    Copyrightï¿½ 2009 Jernej Virag
   */
 
 package org.kiberpipa.coder;
@@ -282,6 +282,54 @@ public class Database
 	         }
       }
 	}
+	
+
+   public static void updateFormat(OutputFormat format) throws SQLException
+   {
+      Connection dbConn = null;
+      
+      try
+      {
+         dbConn = connectSQLite();
+         
+         PreparedStatement statement = dbConn.prepareStatement("UPDATE formats SET name = ?, appendix = ?, videoFormat = ?, videoX = ?, " +
+         		                                                "videoY = ?, videoBitrate = ?, audioFormat = ?, audioChannels = ?, audioSamplerate = ?, audioBitrate = ? WHERE id = ?");
+         
+         statement.setString(1, format.getName());
+         statement.setString(2, format.getFileAppendix());
+         // Video
+         statement.setString(3, format.getVideoFormat());
+         statement.setInt(4, format.getVideoResX());
+         statement.setInt(5, format.getVideoResY());
+         statement.setInt(6, format.getVideoBitrate());
+         // Audio
+         statement.setString(7, format.getAudioFormat());
+         statement.setInt(8, format.getAudioChannels());
+         statement.setInt(9, format.getAudioSamplerate());
+         statement.setInt(10, format.getAudioBitrate());
+         
+         statement.setInt(11, format.getId());
+         
+         statement.executeUpdate();
+      }
+      catch (SQLException e)
+      {
+         Log.error("Failed to update format " + e.getMessage());
+         
+         throw e;
+      }
+      finally
+      {
+         if (dbConn != null)
+            try
+            {
+               dbConn.close();
+            } 
+            catch (SQLException e)
+            {}
+      }
+   }
+	
 	
 	public static void removeFormat(int formatId)
 	{

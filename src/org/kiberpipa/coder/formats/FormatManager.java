@@ -15,7 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with PipaCoder.  If not, see <http://www.gnu.org/licenses/>.
     
-    Copyright© 2009 Jernej Virag
+    Copyrightï¿½ 2009 Jernej Virag
   */
 
 package org.kiberpipa.coder.formats;
@@ -121,6 +121,42 @@ public class FormatManager
 		return newFormat.getId();
 	}
 	
+	public void updateFormat(int id,
+	                         String name,
+	                         String fileAppendix,
+	                         String videoFormat,
+	                         int videoX,
+	                         int videoY,
+	                         int videoBitrate,
+	                         String audioFormat,
+	                         int audioChannels,
+	                         int audioSamplerate,
+	                         int audioBitrate) throws Exception
+	{
+	   if (!formats.containsKey(id))
+	   {
+	      throw new Exception("Cannot update, format does not exist.");
+	   }
+	   
+	   OutputFormat updatedFormat = new OutputFormat(id, 
+                                                    name, 
+                                                    fileAppendix, 
+                                                    videoFormat, 
+                                                    videoX, 
+                                                    videoY, 
+                                                    videoBitrate, 
+                                                    audioFormat, 
+                                                    audioChannels, 
+                                                    audioSamplerate, 
+                                                    audioBitrate);
+	   
+	   // Update database record
+	   Database.updateFormat(updatedFormat);
+	   
+	   // Replace format in datastructure
+	   formats.put(id, updatedFormat);
+	}
+	
 	/**
 	 * Removes a known format from known format lists
 	 * @param id  
@@ -132,7 +168,7 @@ public class FormatManager
 		if (formats.containsKey(id))
 		{
 			// Remove it from map
-			formats.put(id, null);
+			formats.remove(id);
 			
 			Database.removeFormat(id);
 		}
@@ -145,7 +181,7 @@ public class FormatManager
 	/**
 	 * 
 	 * @param id Format id
-	 * @return OutputFormat object corresponding to format ID
+	 * @return OutputFormat object corresponding to format ID or null if it doesn't exist
 	 */
 	public OutputFormat getFormatWithId(int id)
 	{

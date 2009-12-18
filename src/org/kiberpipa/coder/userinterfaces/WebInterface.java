@@ -22,7 +22,10 @@ package org.kiberpipa.coder.userinterfaces;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 import org.kiberpipa.coder.Configuration;
 import org.kiberpipa.coder.Log;
@@ -88,11 +91,23 @@ public class WebInterface extends NanoHTTPD implements UserInterface
             
             responseString = getAllJobsJSON();
          }
+         // Add new format
          else if (command.equals("addformat"))
          {
             responseString = addNewFormat(parms);
          }
-         
+         else if (command.equals("updateformat"))
+         {
+            responseString = updateFormat(parms);
+         }
+         else if (command.equals("getformatinfo"))
+         {
+            responseString = getFormatInfoJSON(parms);
+         }
+         else if (command.equals("addjobs"))
+         {
+            responseString = addJobs(parms);
+         }
          // Responses are JSON, so return text/javascript MIME type
          return new Response(HTTP_OK, "text/javascript", responseString);
       }
@@ -101,6 +116,53 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       return serveFile(uri, header, new File("webinterface"), false);
    }
    
+   /**
+    * Adds set of new jobs to Job manager passed as a filename and list of ids
+    * @param parms parameters, which must include <i>filename</i> with filename string and <i>formats</i> with comma delimited format ID list
+    * @return JSON response
+    */
+   private String addJobs(Properties parms)
+   {
+      String filename = parms.getProperty("filename");
+      
+      // Get format IDs from comma delimited string
+      String formatStrings = parms.getProperty("formats");
+      StringTokenizer tokenizer = new StringTokenizer(formatStrings, ",");
+      
+      // Put formats in array list first so full rollback can be done in case of an error
+      ArrayList<OutputFormat> formats = new ArrayList<OutputFormat>();
+      
+      while (tokenizer.hasMoreTokens())
+      {
+         try
+         {
+            int id = Integer.parseInt(tokenizer.nextToken());
+            OutputFormat format = FormatManager.getInstance().getFormatWithId(id);
+            
+            if (format == null)
+            {
+               return getErrorResponse("Format with ID " + id + " does not exist.");
+            }
+            else
+            {
+               formats.add(format);
+            }
+         }
+         catch (NumberFormatException ex)
+         {
+            return getErrorResponse("Invalid format ID string passed.");
+         }
+      }
+      
+      // Invoke job manager to add jobs to queue
+      for (OutputFormat format : formats)
+      {
+         JobManager.getInstance().addJob(filename, format);
+      }
+      
+      return "{ status : 'OK', message : 'Jobs added successfully.' } ";
+   }
+
    /**
     * Strips command name from /api/*command* type URI
     * @param uri URI to strip from
@@ -179,16 +241,20 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       StringBuilder output = new StringBuilder();
       output.append("[ ");
       
+      ArrayList<Job> jobs = JobManager.getInstance().getJobs();
+      Collections.reverse(jobs);
+      
       // { id: xx, filename: 'xx', status:'xx', progress: 'xx', eta: 'xx' }
-      for (Job job : JobManager.getInstance().getJobs())
+      for (Job job : jobs)
       {
          output.append("{id:" + job.getId() + ",");
-         output.append("filename:'" + job.getInputFileName() +"', ");
+         output.append("filename:'" + job.getInputFileName() + "', ");
+         output.append("format: '" + job.getOutputFormat().getName() + "',");
          output.append("status: '" + job.getState().toString() +"'");
          
          if (job.getState() == JobStates.RUNNING)
          {
-            output.append(",progress : '" + job.getProgress() * 10 + "%',");
+            output.append(",progress : '" + String.format("%.2f", job.getProgress()) + "%'");
             output.append(",eta : 'TBD' },");
          }
          else
@@ -283,8 +349,145 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       
       return "{ status : 'OK', id : " + id + ", message : 'Format added successfully.' }";
    }
+   
+   /**
+    * Updates an already existing format with new parameters
+    * @param params
+    * @return
+    */
+   private String updateFormat(Properties params)
+   {
+      Log.info("[API] Updating format...");
       
-   public String getErrorResponse(String message)
+      int id = -1;
+      String formatName = null;
+      String vFormat = null;
+      int vBitrate = 0;
+      String vResolution = null;
+      String aFormat = null;
+      int aBitrate = 0;
+      int aChannels = 0;
+      int aSampleRate = 0;
+      String suffix = null;
+      
+      // Validation
+      try
+      {
+         if (!params.containsKey("id") ||
+             !params.containsKey("formatname") ||
+             !params.containsKey("vformat") ||
+             !params.containsKey("vbitrate") ||
+             !params.containsKey("vresolution") ||
+             !params.containsKey("aformat") ||
+             !params.containsKey("abitrate") ||
+             !params.containsKey("achannels") || 
+             !params.containsKey("asamplerate") ||
+             !params.containsKey("suffix"))
+         {
+            Log.error("[API] Request for new format denied because of missing parameter.");
+            return getErrorResponse("Missing parameter.");
+         }
+         
+         id = Integer.parseInt(params.getProperty("id"));
+         formatName = params.getProperty("formatname");
+         vFormat = params.getProperty("vformat");
+         vBitrate = Integer.parseInt(params.getProperty("vbitrate"));
+         vResolution = params.getProperty("vresolution");
+         aFormat = params.getProperty("aformat");
+         aBitrate = Integer.parseInt(params.getProperty("abitrate"));
+         aChannels = Integer.parseInt(params.getProperty("achannels"));
+         aSampleRate = Integer.parseInt(params.getProperty("asamplerate"));
+         suffix = params.getProperty("suffix");
+      }
+      catch (NumberFormatException e)
+      {
+         Log.error("[API] Request for update format denied because of invalid parameter.");
+         return getErrorResponse("Invalid parameter.");
+      }
+      
+      // Dereference resolution
+      int videoX = 0;
+      int videoY = 0;
+      
+      try
+      {
+         int xPos = vResolution.indexOf('x');
+         
+         videoX = Integer.parseInt(vResolution.substring(0, xPos));
+         videoY = Integer.parseInt(vResolution.substring(xPos + 1));
+      }
+      catch(Exception e)
+      {
+         Log.error("[API] Request for update format denied because of invalid parameter.");
+         return getErrorResponse("Invalid parameter.");
+      }
+      
+      // Create new format
+      try
+      {
+         FormatManager.getInstance().updateFormat(id, formatName, suffix, vFormat, videoX, videoY, vBitrate, aFormat, aChannels, aSampleRate, aBitrate);
+      }
+      catch (Exception e)
+      {
+         Log.error("[API] Error updating format id " + id + ": " + e.getMessage());
+         
+         return getErrorResponse(e.getMessage());
+      }
+
+      return "{ status : 'OK', id : " + id + ", message : 'Format updated successfully.' }";
+   }
+   
+   /**
+    * Retrieves format information in JSON form
+    * @param params parameters including "id" with format id
+    * @return json format information array
+    */
+   private String getFormatInfoJSON(Properties params)
+   {
+      int id = -1;
+      
+      // Check if ID parameter exists
+      if (params.get("id") == null)
+      {
+         return getErrorResponse("No id sent.");
+      }
+      
+      // Check if number was sent
+      try
+      {
+         id = Integer.parseInt(params.getProperty("id"));
+      }
+      catch (NumberFormatException e)
+      {
+         return getErrorResponse("Invalid ID.");
+      }
+      
+      OutputFormat format = FormatManager.getInstance().getFormatWithId(id);
+      
+      // Check existence of the format
+      if (format == null)
+      {
+         return getErrorResponse("Invalid ID.");
+      }
+      
+      // Build response
+      StringBuilder response = new StringBuilder();
+      
+      response.append("{id: " + format.getId() + ",");
+      response.append(" formatname: '" + format.getName() + "',");
+      response.append(" vformat:'" + format.getVideoFormat() + "',");
+      response.append(" vbitrate: " + format.getVideoBitrate() + ",");
+      response.append(" vresolution: '" + format.getVideoResolution() + "',");
+      response.append(" aformat:'" + format.getAudioFormat() + "',");
+      response.append(" abitrate: " + format.getAudioBitrate() +",");
+      response.append(" asamplerate: " + format.getAudioSamplerate() + ",");
+      response.append(" achannels: " + format.getAudioChannels() + ",");
+      response.append(" suffix: '" + format.getFileAppendix() + "'}");
+      
+      return response.toString();
+   }
+      
+   private String getErrorResponse(String message)
    {
       return "{ status : 'ERROR', message : '" + message + "' }";
    }
