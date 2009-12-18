@@ -1,8 +1,12 @@
 /**
+ * 
  * @author Jernej
  */
 
-jobTableHeader = '<tr><th>Job description</th><th>Status</th><th>Progress</th><th>ETA</th></tr>';
+jobTableHeader = '<tr><th>Job description</th><th>Output format</th><th>Status</th><th>Progress</th><th>ETA</th></tr>';
+
+availableFormats = new Array();
+selectedFormats = new Array();
 
 /**
  * Load page values after document is ready
@@ -10,13 +14,78 @@ jobTableHeader = '<tr><th>Job description</th><th>Status</th><th>Progress</th><t
 $(document).ready(
 function()
 {
+	// Attach button functions
+	$("#add").click(addFormatClick);
+	$("#remove").click(removeFormatClick);
+	$("#encode-button").click(addJobset);
+	
 	loadInputFiles();
 	loadFormatPresets();
 	loadFormats();
-	
 	loadJobTable();
+	
+	setInterval(loadJobTable, 3000);
 }
 );
+
+function addFormatClick()
+{
+	var selected = $("select#allformatlist").val();
+	
+	availableFormats = jQuery.grep(availableFormats, function(value)
+	{
+		if (jQuery.inArray(value.id + '', selected))
+		{
+			return true;
+		} 
+		else
+		{
+			selectedFormats.push(value);
+			return false;
+		}
+	});
+	
+	renderFormatTables();
+};
+
+function removeFormatClick()
+{
+	var selected = $("select#selectedformatlist").val();
+	
+	selectedFormats = jQuery.grep(selectedFormats, function(value)
+	{
+		if (jQuery.inArray(value.id + '', selected))
+		{
+			return true;
+		} 
+		else
+		{
+			availableFormats.push(value);
+			return false;
+		}
+	});
+	
+	renderFormatTables();
+}
+
+function addJobset()
+{
+	var formatIDs = [];
+	
+	for (var i = 0; i < selectedFormats.length; i++)
+	{
+		formatIDs.push(selectedFormats[i].id);
+	}
+	
+	var request = { filename : $("select#select-filename").val(), formats : formatIDs};
+	
+	$.post("/api/addjobs", request, jobsAddedCB, "json");
+}
+
+function jobsAddedCB(response)
+{
+	loadJobTable();
+}
 
 /**
  * Load input file list for listbox
@@ -39,7 +108,7 @@ function loadInputFilesCB(response)
 	
 	for (var i = 0; i < response.length; i++)
 	{
-		fileListHTML += '<option>' + response[i] + '</option>';
+		fileListHTML += '<option value="' + response[i] + '">' + response[i] + '</option>';
 	}
 	
 	$("select#select-filename").html(fileListHTML);
@@ -68,28 +137,52 @@ function loadFormats()
 
 function loadFormatsCB(response)
 {
+	selectedFormats = new Array();
+	availableFormats = response;
+	
+	renderFormatTables();
+}
+
+function renderFormatTables()
+{
 	var formatsHTML = '';
 	
-	if (response.length == 0)
+	if (availableFormats.length == 0)
 	{
 		formatsHTML += '<option> -- NO FORMATS -- </option>';
 	}	
 	else
 	{	
-		for (var i = 0; i < response.length; i++)
+		for (var i = 0; i < availableFormats.length; i++)
 		{
-			formatsHTML += '<option>' + response[i].name + '</option>';
-		}	
+			formatsHTML += '<option value="' + availableFormats[i].id + '">' + availableFormats[i].name + '</option>';
+		}
 	}
 	
 	$("select#allformatlist").html(formatsHTML);
+	
+	formatsHTML = '';
+	
+	if (selectedFormats.length == 0)
+	{
+		formatsHTML += '<option> -- NOTHING SELECTED -- </option>';
+	}
+	else
+	{
+		for (var i = 0; i < selectedFormats.length; i++)
+		{
+			formatsHTML += '<option value="' + selectedFormats[i].id + '">' + selectedFormats[i].name + '</option>';
+		}
+	}
+	
+	$("select#selectedformatlist").html(formatsHTML);
 }
 
 function loadJobTable()
 {
 	// Show loading text for elements
-	var tableHTML = jobTableHeader + '<tr><td colspan="4" align="center">Loading...</td></tr>';
-	$("table#jobs").html(tableHTML);
+	var tableHTML = jobTableHeader + '<tr><td colspan="5" align="center">Loading...</td></tr>';
+	//$("table#jobs").html(tableHTML);
 	
 	// Send load request
 	$.get("/api/jobs", null, loadJobTableCB, "json");
@@ -97,21 +190,25 @@ function loadJobTable()
 
 function loadJobTableCB(response)
 {
-	var tableHTML = jobTableHeader;
+	// Clear the table
+	$("#jobs > tbody").empty();
+	$("#jobs > tbody").append(jobTableHeader);
 	
 	if (response.length == 0)
 	{
-		tableHTML += '<tr><td colspan="4" align="center"> -- NO JOBS -- </td></tr>';
+		$("#jobs > tbody").append('<tr><td colspan="5" align="center"> -- NO JOBS -- </td></tr>');
 	}
 	else
 	{
+		var tableHTML = '';
+		
 		for (var i = 0; i < response.length; i++)
 		{
-			tableHTML += '<tr><td>' + response[i].filename + '</td><td>' + response[i].status + '</td>';
+			tableHTML += '<tr><td>' + response[i].filename + '</td><td>' + response[i].format + '</td><td>' + response[i].status + '</td>';
 			
 			if (response[i].progress != null)
 			{
-				tableHTML += "<td>" + reponse[i].progress + "</td>";
+				tableHTML += "<td>" + response[i].progress + "</td>";
 			}
 			else
 			{
@@ -124,12 +221,12 @@ function loadJobTableCB(response)
 			}
 			else
 			{
-				tableHTML += "<td></td>";
+				tableHTML += "<td>&nbsp;</td>";
 			}
 			
 			tableHTML += "</tr>";
 		}
+		
+		$("#jobs > tbody").append(tableHTML);
 	}
-	
-	$("table#jobs").html(tableHTML);	 
 }

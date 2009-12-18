@@ -15,7 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with PipaCoder.  If not, see <http://www.gnu.org/licenses/>.
     
-    Copyright© 2009 Jernej Virag
+    Copyrightï¿½ 2009 Jernej Virag
   */
 
 package org.kiberpipa.coder.processor;
@@ -81,7 +81,7 @@ public class FFMpegProcessor extends VideoProcessor
       string.append(" -threads " + (Runtime.getRuntime().availableProcessors() + 1));  // Number of cores + 1 threads
       
       // Input file name
-      string.append(" -i " + job.getInputFileName());
+      string.append(" -i " + Configuration.getValue("inputdir") + job.getInputFileName());
       
       OutputFormat outputFormat = job.getOutputFormat();
       
@@ -98,7 +98,7 @@ public class FFMpegProcessor extends VideoProcessor
       string.append(" -ac " + outputFormat.getAudioChannels());
       
       // Output file name
-      string.append(" " + job.getOutputFileName());
+      string.append(" " + Configuration.getValue("outputdir") + job.getOutputFileName());
       
       return string.toString();
    }

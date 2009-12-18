@@ -7,8 +7,9 @@ $(document).ready(function()
 	loadFormats();
 	// Add handler for Add/Update button
 	$("#addupdatebtn").click(AddRemoveClickStart);
+	$("#removebtn").click(RemoveClickStart);
+	$("#formatedit").change(FormatClick);
 });
-
 
 function loadFormats()
 {
@@ -20,15 +21,15 @@ function loadFormatsCB(response)
 {		
 	if (response.length == 0)
 	{
-		$("#formatedit").html("<option>No formats available.</option>");
+		$("#formatedit").html('<option value="-1">No formats available.</option>');
 	}
 	else
 	{
-		var formatsHTML = '<option> - Select one - </option>';
+		var formatsHTML = '<option value="-1"> - Select one - </option>';
 		
 		for (var i = 0; i < response.length; i++)
 		{
-			formatsHTML += '<option>' + response[i].name + '</option>';
+			formatsHTML += '<option value="' + response[i].id + '">' + response[i].name + '</option>';
 		}
 		
 		$("#formatedit").html(formatsHTML);		
@@ -60,7 +61,17 @@ function AddRemoveClickCall()
 	var formData = $("#edit-format").serialize();
 
 	// Create GET call to upload new format
-	$.get("/api/addformat", formData, AddUpdateFormatCB, "json");
+	
+	debugger;
+	
+	if ($("input#id").val() == -1)
+	{
+		$.get("/api/addformat", formData, AddUpdateFormatCB, "json");	
+	}
+	else
+	{
+		$.get("/api/updateformat", formData, AddUpdateFormatCB, "json");
+	}
 }
 
 function AddUpdateFormatCB(response)
@@ -86,4 +97,57 @@ function AddUpdateFormatCB(response)
 	}
 	
 	statusShown = true;
+	
+	loadFormats();
+}
+
+function RemoveClickStart()
+{
+	if (statusShown) 
+	{
+		$("#response").fadeTo("normal", 0.01, AddRemoveClickCall);
+	}
+	else
+	{
+		RemoveClickCall();
+	}	
+}
+
+function RemoveClickCall()
+{
+	$("#response").removeClass("success-response");
+	$("#response").removeClass("error-response");
+	$("#response").html("");
+	
+	// TODO: validate form	
+}
+
+function FormatClick()
+{
+	// Clear response
+	$("#response").removeClass("success-response");
+	$("#response").removeClass("error-response");
+	$("#response").html("");
+	$("#response").hide();
+	statusShown = false;
+	
+	if (parseInt($("#formatedit").val()) == -1)
+	{
+		$("input#id").val(-1);
+	}
+	else
+	{
+		$.get("/api/getformatinfo", {id:parseInt($("#formatedit").val())}, FormatInfoReceived, "json");
+	}
+}
+
+function FormatInfoReceived(response)
+{	
+	// Fill form data
+	var $fields = $(":input");
+	
+	for (var i = 0; i < $fields.length; i++)
+	{
+		$fields[i].value = response[$fields[i].name];
+	}
 }

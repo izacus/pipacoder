@@ -24,7 +24,10 @@ import java.util.TimeZone;
 /**
  * A simple, tiny, nicely embeddable HTTP 1.0 server in Java
  * 
- * <p>
+ * 
+ * * <p>
+ * NanoHTTPD version 1.2, Copyright &copy; 2009 Jernej Virag
+ * 
  * NanoHTTPD version 1.11, Copyright &copy; 2001,2005-2008 Jarno Elonen
  * (elonen@iki.fi, http://iki.fi/elonen/)
  * 
@@ -425,6 +428,7 @@ public class NanoHTTPD
        * "name=Jack%20Daniels&pass=Single%20Malt" ) and adds them to given
        * Properties.
        */
+      @SuppressWarnings("unchecked")
       private void decodeParms(String parms, Properties p)
             throws InterruptedException
       {
@@ -437,8 +441,22 @@ public class NanoHTTPD
             String e = st.nextToken();
             int sep = e.indexOf('=');
             if (sep >= 0)
-               p.put(decodePercent(e.substring(0, sep)).trim(), decodePercent(e
-                     .substring(sep + 1)));
+            {
+               // Watch out for doubled up parameters, return those as an ArrayList
+               String key = decodePercent(e.substring(0, sep)).trim();
+               String val = decodePercent(e.substring(sep + 1));
+               
+               if (p.containsKey(key))
+               {
+                  String param = p.getProperty(key);
+                  param += "," + val;
+                  p.put(key, param);
+               }
+               else
+               {
+                  p.put(key, val);
+               }
+            }
          }
       }
 

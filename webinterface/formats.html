@@ -14,7 +14,6 @@
 				<h1>PipaCoder</h1><br>
 				<h2>Format management</h2>
 			</div>
-			<div id="response">Test test test</div>
 			<div>
 				<div class="format-labels">
 					Edit format:
@@ -27,7 +26,7 @@
 					</select>
 					<br><br>
 				<form id="edit-format">
-					<input type="hidden" value="-1" name="id"></input>
+					<input type="text" value="-1" name="id"></input>
 					<input type="text" id="formatname" name="formatname" class="format-textbox"></input>
 				</div>
 				<div class="floatfix"></div>
@@ -80,11 +79,12 @@
 				<div class="floatfix"></div>
 				
 				<div class="format-submit">
-					<button type="button">Remove</button>
+					<button type="button" id="removebtn">Remove</button>
 					<button type="button" id="addupdatebtn">Add/update</button>
 				</div>
 				</form>
 			</div>
+			<div id="response">Test test test</div>
 			<div id="footer">
 				<h6>
 					This is free software. Copyright Jernej Virag 2009.
