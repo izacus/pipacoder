@@ -3,7 +3,7 @@
  * @author Jernej
  */
 
-jobTableHeader = '<tr><th>Job description</th><th>Output format</th><th>Status</th><th>Progress</th><th>ETA</th></tr>';
+jobTableHeader = '<tr><th>File name</th><th>Output format</th><th>Status</th><th>Progress</th><th>ETA</th></tr>';
 
 availableFormats = new Array();
 selectedFormats = new Array();
