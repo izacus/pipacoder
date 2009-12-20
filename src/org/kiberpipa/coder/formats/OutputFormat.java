@@ -15,7 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with PipaCoder.  If not, see <http://www.gnu.org/licenses/>.
     
-    Copyright© 2009 Jernej Virag
+    Copyrightï¿½ 2009 Jernej Virag
   */
 
 package org.kiberpipa.coder.formats;
@@ -43,6 +43,9 @@ public class OutputFormat
    private int audioChannels;
    private int audioSamplerate;
    private int audioBitrate;
+   
+   // Special parameters
+   private String ffmpegParams;
      
    public OutputFormat(int id,
  		 			        String name,
@@ -54,7 +57,8 @@ public class OutputFormat
                        String aFormat,
                        int aChannels,
                        int aSamplerate,
-                       int aBitrate)
+                       int aBitrate,
+                       String ffmpegParams)
    {
         this.id = id;
         this.name = name; 
@@ -70,6 +74,7 @@ public class OutputFormat
         this.audioChannels = aChannels;
         this.audioBitrate = aBitrate;
         this.audioSamplerate = aSamplerate;
+        this.ffmpegParams = ffmpegParams;
    }
 
    public String getFileAppendix()
@@ -135,5 +140,10 @@ public class OutputFormat
    public void setId(int id)
    {
       this.id = id;
+   }
+
+   public String getFfmpegParams()
+   {
+      return ffmpegParams;
    }
 }

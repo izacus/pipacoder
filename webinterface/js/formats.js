@@ -11,13 +11,16 @@ $(document).ready(function()
 	$("#formatedit").change(FormatClick);
 });
 
-function loadFormats()
+function loadFormats(selectid)
 {
 	$("select#formatedit").html("<option>Loading...</option>");
-	$.get("/api/formats", null, loadFormatsCB, "json");
+	$.get("/api/formats", null, function(data)
+								{
+									loadFormatsCB(data, selectid);
+								}, "json");
 }
 
-function loadFormatsCB(response)
+function loadFormatsCB(response, selectid)
 {		
 	if (response.length == 0)
 	{
@@ -32,7 +35,13 @@ function loadFormatsCB(response)
 			formatsHTML += '<option value="' + response[i].id + '">' + response[i].name + '</option>';
 		}
 		
-		$("#formatedit").html(formatsHTML);		
+		$("#formatedit").html(formatsHTML);
+		
+		// Select value with passed ID
+		if (selectid !== undefined)
+		{
+			$("#formatedit").val(selectid);
+		}		
 	}
 }
 
@@ -61,9 +70,6 @@ function AddRemoveClickCall()
 	var formData = $("#edit-format").serialize();
 
 	// Create GET call to upload new format
-	
-	debugger;
-	
 	if ($("input#id").val() == -1)
 	{
 		$.get("/api/addformat", formData, AddUpdateFormatCB, "json");	
@@ -98,14 +104,14 @@ function AddUpdateFormatCB(response)
 	
 	statusShown = true;
 	
-	loadFormats();
+	loadFormats(response.id);
 }
 
 function RemoveClickStart()
 {
 	if (statusShown) 
 	{
-		$("#response").fadeTo("normal", 0.01, AddRemoveClickCall);
+		$("#response").fadeTo("normal", 0.01, RemoveClickCall);
 	}
 	else
 	{
@@ -119,7 +125,38 @@ function RemoveClickCall()
 	$("#response").removeClass("error-response");
 	$("#response").html("");
 	
-	// TODO: validate form	
+	// Serialize form for GET
+	var formData = $("#edit-format").serialize();
+	
+	$.get("/api/removeformat", formData, RemoveClickCB, "json");
+}
+
+function RemoveClickCB(response)
+{
+	if (response.status == 'OK')
+	{
+		clearFormatForm();
+		$("#response").addClass("success-response");
+	}
+	else
+	{
+		$("#response").addClass("error-response");
+	}
+	
+	$("#response").html(response.message);
+	
+	if (!statusShown) 
+	{
+		$("#response").slideDown("slow");
+	}
+	else
+	{
+		$("#response").fadeTo("normal", 1, null);
+	}
+	
+	statusShown = true;
+	
+	loadFormats();
 }
 
 function FormatClick()
@@ -133,7 +170,7 @@ function FormatClick()
 	
 	if (parseInt($("#formatedit").val()) == -1)
 	{
-		$("input#id").val(-1);
+		clearFormatForm();
 	}
 	else
 	{
@@ -150,4 +187,17 @@ function FormatInfoReceived(response)
 	{
 		$fields[i].value = response[$fields[i].name];
 	}
+}
+
+function clearFormatForm()
+{
+	var $fields = $(":input");
+	
+	for (var i = 0; i < $fields.length; i++)
+	{
+		$fields[i].value = '';
+	}
+	
+	// Set current ID to -1
+	$("input#id").val(-1);
 }

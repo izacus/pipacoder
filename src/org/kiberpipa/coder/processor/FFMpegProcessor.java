@@ -97,6 +97,9 @@ public class FFMpegProcessor extends VideoProcessor
       string.append(" -ar " + outputFormat.getAudioSamplerate());
       string.append(" -ac " + outputFormat.getAudioChannels());
       
+      // Add possible additional options
+      string.append(" " + outputFormat.getFfmpegParams() + " ");
+      
       // Output file name
       string.append(" " + Configuration.getValue("outputdir") + job.getOutputFileName());
       

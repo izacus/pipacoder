@@ -118,7 +118,8 @@ public class Database
 									      "audioFormat	TEXT, " +                     // Output audio format
 									      "audioChannels	INTEGER, " +                  // Number of output audio channels
 									      "audioSamplerate INTEGER, " +                // Samplerate
-									      "audioBitrate	INTEGER);");                  // Bitrate
+									      "audioBitrate	INTEGER," +
+									      "ffmpegParams TEXT);");                  // Bitrate
 			
 			// Create table for jobs
 			statement.executeUpdate("CREATE TABLE jobs (" +
@@ -191,7 +192,8 @@ public class Database
 	                                                results.getString("audioFormat"),
 	                                                results.getInt("audioChannels"),
 	                                                results.getInt("audioSamplerate"),
-	                                                results.getInt("audioBitrate"));
+	                                                results.getInt("audioBitrate"),
+	                                                results.getString("ffmpegParams"));
 	         
 	         formats.add(format);
 	      }
@@ -234,8 +236,8 @@ public class Database
 	            dbConn.setAutoCommit(false);
 	            
 	            PreparedStatement statement = dbConn.prepareStatement("INSERT INTO formats" +
-	                                                                  "(name, appendix, videoFormat, videoX, videoY, videoBitrate, audioFormat, audioChannels, audioSamplerate, audioBitrate)" +
-	                                                                  " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+	                                                                  "(name, appendix, videoFormat, videoX, videoY, videoBitrate, audioFormat, audioChannels, audioSamplerate, audioBitrate, ffmpegParams)" +
+	                                                                  " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 	            
 	            statement.setString(1, format.getName());
 	            statement.setString(2, format.getFileAppendix());
@@ -249,6 +251,9 @@ public class Database
 	            statement.setInt(8, format.getAudioChannels());
 	            statement.setInt(9, format.getAudioSamplerate());
 	            statement.setInt(10, format.getAudioBitrate());
+	            
+	            // FFMPEG parameters
+	            statement.setString(11, format.getFfmpegParams());
 	            
 	            statement.executeUpdate();
 	   
@@ -293,7 +298,7 @@ public class Database
          dbConn = connectSQLite();
          
          PreparedStatement statement = dbConn.prepareStatement("UPDATE formats SET name = ?, appendix = ?, videoFormat = ?, videoX = ?, " +
-         		                                                "videoY = ?, videoBitrate = ?, audioFormat = ?, audioChannels = ?, audioSamplerate = ?, audioBitrate = ? WHERE id = ?");
+         		                                                "videoY = ?, videoBitrate = ?, audioFormat = ?, audioChannels = ?, audioSamplerate = ?, audioBitrate = ?, ffmpegParams = ? WHERE id = ?");
          
          statement.setString(1, format.getName());
          statement.setString(2, format.getFileAppendix());
@@ -308,7 +313,10 @@ public class Database
          statement.setInt(9, format.getAudioSamplerate());
          statement.setInt(10, format.getAudioBitrate());
          
-         statement.setInt(11, format.getId());
+         // FFmpeg parameters
+         statement.setString(11, format.getFfmpegParams());
+         
+         statement.setInt(12, format.getId());
          
          statement.executeUpdate();
       }

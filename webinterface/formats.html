@@ -26,7 +26,7 @@
 					</select>
 					<br><br>
 				<form id="edit-format">
-					<input type="text" value="-1" name="id"></input>
+					<input type="hidden" value="-1" name="id" id="id"></input>
 					<input type="text" id="formatname" name="formatname" class="format-textbox"></input>
 				</div>
 				<div class="floatfix"></div>
@@ -72,9 +72,13 @@
 				<h3>Miscellaneous</h3>
 				<div class="format-labels">
 					Filename suffix:
+					<br><br>
+					Additional FFMPEG parameters:
 				</div>				
 				<div class="format-boxes">
 					<input type="text" id="suffix" name="suffix" class="format-textbox"></input>
+					<br><br>
+					<input type="text" id="ffmpegparams" name="ffmpegparams" class="format-textbox"></input>
 				</div>
 				<div class="floatfix"></div>
 				

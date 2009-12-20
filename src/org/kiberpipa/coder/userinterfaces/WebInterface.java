@@ -100,6 +100,10 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          {
             responseString = updateFormat(parms);
          }
+         else if (command.equals("removeformat"))
+         {
+            responseString = removeFormat(parms);
+         }
          else if (command.equals("getformatinfo"))
          {
             responseString = getFormatInfoJSON(parms);
@@ -285,6 +289,9 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       int aBitrate = 0;
       int aChannels = 0;
       int aSampleRate = 0;
+      
+      String ffmpegParams = null;
+      
       String suffix = null;
       
       // Validation
@@ -299,7 +306,8 @@ public class WebInterface extends NanoHTTPD implements UserInterface
              !params.containsKey("abitrate") ||
              !params.containsKey("achannels") || 
              !params.containsKey("asamplerate") ||
-             !params.containsKey("suffix"))
+             !params.containsKey("suffix") ||
+             !params.containsKey("ffmpegparams"))
          {
             Log.error("[API] Request for new format denied because of missing parameter.");
             return getErrorResponse("Missing parameter.");
@@ -314,6 +322,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          aBitrate = Integer.parseInt(params.getProperty("abitrate"));
          aChannels = Integer.parseInt(params.getProperty("achannels"));
          aSampleRate = Integer.parseInt(params.getProperty("asamplerate"));
+         ffmpegParams = params.getProperty("ffmpegparams");
          suffix = params.getProperty("suffix");
       }
       catch (NumberFormatException e)
@@ -340,7 +349,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       }
       
       // Create new format
-      id = FormatManager.getInstance().addFormat(formatName, suffix, vFormat, videoX, videoY, vBitrate, aFormat, aChannels, aSampleRate, aBitrate);
+      id = FormatManager.getInstance().addFormat(formatName, suffix, vFormat, videoX, videoY, vBitrate, aFormat, aChannels, aSampleRate, aBitrate, ffmpegParams);
       
       if (id == -1)
       {
@@ -368,6 +377,8 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       int aBitrate = 0;
       int aChannels = 0;
       int aSampleRate = 0;
+      String ffmpegParams = null;
+      
       String suffix = null;
       
       // Validation
@@ -382,7 +393,8 @@ public class WebInterface extends NanoHTTPD implements UserInterface
              !params.containsKey("abitrate") ||
              !params.containsKey("achannels") || 
              !params.containsKey("asamplerate") ||
-             !params.containsKey("suffix"))
+             !params.containsKey("suffix") ||
+             !params.containsKey("ffmpegparams"))
          {
             Log.error("[API] Request for new format denied because of missing parameter.");
             return getErrorResponse("Missing parameter.");
@@ -397,6 +409,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          aBitrate = Integer.parseInt(params.getProperty("abitrate"));
          aChannels = Integer.parseInt(params.getProperty("achannels"));
          aSampleRate = Integer.parseInt(params.getProperty("asamplerate"));
+         ffmpegParams = params.getProperty("ffmpegparams");
          suffix = params.getProperty("suffix");
       }
       catch (NumberFormatException e)
@@ -425,7 +438,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       // Create new format
       try
       {
-         FormatManager.getInstance().updateFormat(id, formatName, suffix, vFormat, videoX, videoY, vBitrate, aFormat, aChannels, aSampleRate, aBitrate);
+         FormatManager.getInstance().updateFormat(id, formatName, suffix, vFormat, videoX, videoY, vBitrate, aFormat, aChannels, aSampleRate, aBitrate, ffmpegParams);
       }
       catch (Exception e)
       {
@@ -435,6 +448,39 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       }
 
       return "{ status : 'OK', id : " + id + ", message : 'Format updated successfully.' }";
+   }
+   
+   private String removeFormat(Properties parms)
+   {
+      if (!parms.containsKey("id"))
+      {
+         Log.error("[API] Request for delete format denied because of invalid parameter.");
+         return getErrorResponse("Invalid parameter.");
+      }
+      
+      int id = -1;
+      
+      try
+      {
+         id = Integer.parseInt(parms.getProperty("id"));
+      }
+      catch (NumberFormatException e)
+      {
+         Log.error("[API] Request for delete format denied because of invalid parameter: " + parms.getProperty("id"));
+         return getErrorResponse("Invalid parameter.");
+      }
+      
+      try
+      {
+         FormatManager.getInstance().deleteFormat(id);
+      }
+      catch (Exception e)
+      {
+         Log.error("[API] Request for delete failed: " + e.getMessage());
+         return getErrorResponse(e.getMessage());
+      }
+      
+      return "{ status : 'OK', message : 'Format deleted successfully.' }";
    }
    
    /**
@@ -482,6 +528,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       response.append(" abitrate: " + format.getAudioBitrate() +",");
       response.append(" asamplerate: " + format.getAudioSamplerate() + ",");
       response.append(" achannels: " + format.getAudioChannels() + ",");
+      response.append(" ffmpegparams: '" + format.getFfmpegParams() + "',");
       response.append(" suffix: '" + format.getFileAppendix() + "'}");
       
       return response.toString();

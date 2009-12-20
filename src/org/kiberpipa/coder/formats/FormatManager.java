@@ -88,7 +88,8 @@ public class FormatManager
 						      String audioFormat,
 						      int audioChannels,
 						      int audioSamplerate,
-						      int audioBitrate)
+						      int audioBitrate,
+						      String ffmpegParams)
 	{
 		// Format ID is set by the database query
 		OutputFormat newFormat = new OutputFormat(0, 
@@ -101,7 +102,8 @@ public class FormatManager
 												            audioFormat, 
 												            audioChannels, 
 												            audioSamplerate, 
-												            audioBitrate);
+												            audioBitrate,
+												            ffmpegParams);
 		
 
 	    // Attempt to insert format into database 
@@ -131,7 +133,8 @@ public class FormatManager
 	                         String audioFormat,
 	                         int audioChannels,
 	                         int audioSamplerate,
-	                         int audioBitrate) throws Exception
+	                         int audioBitrate,
+	                         String ffmpegParams) throws Exception
 	{
 	   if (!formats.containsKey(id))
 	   {
@@ -148,7 +151,8 @@ public class FormatManager
                                                     audioFormat, 
                                                     audioChannels, 
                                                     audioSamplerate, 
-                                                    audioBitrate);
+                                                    audioBitrate,
+                                                    ffmpegParams);
 	   
 	   // Update database record
 	   Database.updateFormat(updatedFormat);
