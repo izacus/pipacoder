@@ -19,6 +19,7 @@
 					Edit format:
 					<br><br>
 					Format name:
+					<br>
 				</div>
 				<div class="format-boxes">
 					<select id="formatedit" name="formatedit" class="format-textbox">
@@ -27,58 +28,70 @@
 					<br><br>
 				<form id="edit-format">
 					<input type="hidden" value="-1" name="id" id="id"></input>
-					<input type="text" id="formatname" name="formatname" class="format-textbox"></input>
+					<input type="text" id="formatname" name="formatname" class="format-textbox"></input><br>
+					<span class="format-hints">Visible name of the format</span>
 				</div>
 				<div class="floatfix"></div>
 				<h3>Video parameters</h3>
 				
 				<div class="format-labels">
 					Video format :
-					<br><br>
+					<br><br><br>
 					Bitrate (bps): 
-					<br><br>
+					<br><br><br>
 					Resolution (px): 
+					<br>
 				</div>
 				<div class="format-boxes">
 					<input type="text" id="vformat" name="vformat" class="format-textbox"></input>
+					<br><span class="format-hints">Video codec value for ffmpeg. Example: libx264</span>
 					<br><br>
 					<input type="text" id="vbitrate" name="vbitrate" class="format-textbox"></input>
+					<br><span class="format-hints">Video bitrate value in kbps without units</span>
 					<br><br>
 					<input type="text" id="vresolution" name="vresolution" class="format-textbox"></input>
+					<br><span class="format-hints">Resolution in WxH format. Example: 320x240</span>
 				</div>
 				<div class="floatfix"></div>
 				
 				<h3>Audio parameters</h3>
 				<div class="format-labels">
 					Audio format:
-					<br><br>
+					<br><br><br>
 					Bitrate (bps): 
-					<br><br>
+					<br><br><br>
 					Number of channels:
 					<br><br>
 					Samplerate (Hz): 
+					<br>
 				</div>
 				<div class="format-boxes">
 					<input type="text" id="aformat" name="aformat" class="format-textbox"></input>
+					<br><span class="format-hints">Audio codec for ffmpeg. Example: libfaac</span>
 					<br><br>
 					<input type="text" id="abitrate" name="abitrate" class="format-textbox"></input>
+					<br><span class="format-hints">Audio bitrate in <em>bps</em>. Example: 128000</span>
 					<br><br>
 					<input type="text" id="achannels" name="achannels" class="format-textbox"></input>
 					<br><br>
 					<input type="text" id="asamplerate" name="asamplerate" class="format-textbox"></input>
+					<br><span class="format-hints">Samplerate in Hz. Example: 48000</span>
 				</div>
 				<div class="floatfix"></div>
 				
 				<h3>Miscellaneous</h3>
 				<div class="format-labels">
 					Filename suffix:
-					<br><br>
+					<br><br><br><br>
 					Additional FFMPEG parameters:
+					<br><br><br>
 				</div>				
 				<div class="format-boxes">
 					<input type="text" id="suffix" name="suffix" class="format-textbox"></input>
+					<br><span class="format-hints">Suffix added to input file name to produce output file name</span>
 					<br><br>
 					<input type="text" id="ffmpegparams" name="ffmpegparams" class="format-textbox"></input>
+					<br><span class="format-hints">Additional command line options appended to ffmpeg command line</span>
 				</div>
 				<div class="floatfix"></div>
 				
@@ -88,7 +101,7 @@
 				</div>
 				</form>
 			</div>
-			<div id="response">Test test test</div>
+			<div id="response">&nbsp;</div>
 			<div id="footer">
 				<h6>
 					This is free software. Copyright Jernej Virag 2009.

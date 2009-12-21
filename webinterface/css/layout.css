@@ -213,6 +213,15 @@ h3
 	float: left;
 }
 
+.format-hints
+{
+  color:#888;
+  font-size: 80%;
+  line-height: 50%;
+ 	
+  font-variant: small-caps;
+}
+
 .format-boxes
 {
 	width: 300px;
