@@ -3,7 +3,7 @@
  * @author Jernej
  */
 
-jobTableHeader = '<tr><th>File name</th><th>Output format</th><th>Status</th><th>Progress</th><th>ETA</th></tr>';
+jobTableHeader = '<tr><th>File name</th><th>Format</th><th>Status</th><th>Progress</th><th>&nbsp;</th></tr>';
 
 availableFormats = new Array();
 selectedFormats = new Array();
@@ -191,7 +191,6 @@ function loadJobTable()
 {
 	// Show loading text for elements
 	var tableHTML = jobTableHeader + '<tr><td colspan="5" align="center">Loading...</td></tr>';
-	//$("table#jobs").html(tableHTML);
 	
 	// Send load request
 	$.get("/api/jobs", null, loadJobTableCB, "json");
@@ -213,7 +212,22 @@ function loadJobTableCB(response)
 		
 		for (var i = 0; i < response.length; i++)
 		{
-			tableHTML += '<tr><td>' + response[i].filename + '</td><td>' + response[i].format + '</td><td>' + response[i].status + '</td>';
+			var responseColor;
+			
+			switch(response[i].status)
+			{
+				case 'RUNNING':
+					responseColor = 'black';
+					break;
+				case 'FAILED':
+					responseColor = 'red';
+					break;
+				case 'DONE':
+					responseColor = 'green';
+					break;
+			}
+			
+			tableHTML += '<tr><td>' + response[i].filename + '</td><td>' + response[i].format + '</td><td style="color:' + responseColor + '">' + response[i].status + '</td>';
 			
 			if (response[i].progress != null)
 			{
@@ -232,6 +246,17 @@ function loadJobTableCB(response)
 				}
 			}
 			
+			
+			if (response[i].status === 'RUNNING')
+			{
+				tableHTML += '<td><a href="javascript:stopJob(' + response[i].id + ')">Stop</a></td>';
+			}
+			else
+			{
+				tableHTML += '<td>&nbsp;</td>';
+			}
+			
+			/* TODO
 			if (response[i].eta != null)
 			{
 				tableHTML += "<td>" + response[i].eta + "</td>";
@@ -239,7 +264,7 @@ function loadJobTableCB(response)
 			else
 			{
 				tableHTML += "<td>&nbsp;</td>";
-			}
+			} */
 			
 			tableHTML += "</tr>";
 		}
@@ -258,4 +283,12 @@ function showFailReason(jobid)
 function showFailReasonCB(response)
 {
 	$.modal('<div class="messagebox">' + response.message + '</div>');
+}
+
+function stopJob(jobid)
+{
+	var data = { id : jobid};
+	
+	// Reload job table as callback
+	$.get("/api/stopjob", data, loadJobTable, "json");
 }

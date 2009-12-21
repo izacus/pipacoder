@@ -110,6 +110,10 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          {
             responseString = addJobs(parms);
          }
+         else if (command.equals("stopjob"))
+         {
+            responseString = stopJob(parms);
+         }
          // Responses are JSON, so return text/javascript MIME type
          return new Response(HTTP_OK, "text/javascript", responseString);
       }
@@ -188,6 +192,33 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       }
       
       return "{ status : 'OK', message : 'Jobs added successfully.' } ";
+   }
+   
+   private String stopJob(Properties parms)
+   {
+      int id = -1;
+      
+      // Check if ID parameter exists
+      if (parms.get("id") == null)
+      {
+         return getErrorResponse("No id sent.");
+      }
+      
+      // Check if number was sent
+      try
+      {
+         id = Integer.parseInt(parms.getProperty("id"));
+      }
+      catch (NumberFormatException e)
+      {
+         return getErrorResponse("Invalid ID.");
+      }
+      
+      Job job = JobManager.getInstance().getJobWithId(id);
+      
+      job.stop();
+      
+      return "{}";
    }
 
    /**
@@ -272,8 +303,10 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       Collections.reverse(jobs);
       
       // { id: xx, filename: 'xx', status:'xx', progress: 'xx', eta: 'xx' }
-      for (Job job : jobs)
+      for (int i = 0; i < Math.min(jobs.size(), 16); i++)
       {
+         Job job = jobs.get(i);
+         
          output.append("{id:" + job.getId() + ",");
          output.append("filename:'" + job.getInputFileName() + "', ");
          output.append("format: '" + job.getOutputFormat().getName() + "',");
@@ -321,7 +354,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          return getErrorResponse("Job doesn't exist anymore.");
       }
       
-      String message = job.getFailMessage() == null ? "No error message stored." : job.getFailMessage().replaceAll("\\n", "<br>").replaceAll("\\r", "").replaceAll("'", "\\'");
+      String message = job.getFailMessage() == null ? "No error message stored." : job.getFailMessage().replaceAll("\\n", "<br>").replaceAll("\\r", "").replaceAll("\\\\", "\\\\\\\\").replaceAll("\'", "\\\\'");
       
       return "{ message: '" + message + "'}";
    }
