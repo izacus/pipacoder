@@ -132,9 +132,15 @@ public class WebInterface extends NanoHTTPD implements UserInterface
    private String addJobs(Properties parms)
    {
       String filename = parms.getProperty("filename");
-      
+
       // Get format IDs from comma delimited string
       String formatStrings = parms.getProperty("formats");
+      
+      if (formatStrings == null)
+      {
+         return getErrorResponse("No output formats were specified!");
+      }
+      
       StringTokenizer tokenizer = new StringTokenizer(formatStrings, ",");
       
       // Put formats in array list first so full rollback can be done in case of an error
@@ -162,10 +168,29 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          }
       }
       
-      // Invoke job manager to add jobs to queue
-      for (OutputFormat format : formats)
+      // Possible to add multiple files in one go
+      ArrayList<String> files = new ArrayList<String>();
+      
+      if (filename.equals("ALLFILES"))
       {
-         JobManager.getInstance().addJob(filename, format);
+         File inputFileDirectory = new File(Configuration.getValue("inputdir"));
+         for (String fileName : inputFileDirectory.list())
+         {
+            files.add(fileName);
+         }
+      }
+      else
+      {
+         files.add(filename);
+      }
+      
+      for (String file : files)
+      {
+         // Invoke job manager to add jobs to queue
+         for (OutputFormat format : formats)
+         {
+            JobManager.getInstance().addJob(file, format);
+         }
       }
       
       return "{ status : 'OK', message : 'Jobs added successfully.' } ";
@@ -302,7 +327,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          return getErrorResponse("Job doesn't exist anymore.");
       }
       
-      String message = job.getFailMessage() == null ? "No error message stored." : job.getFailMessage().replaceAll("\\n", "<br>");
+      String message = job.getFailMessage() == null ? "No error message stored." : job.getFailMessage().replaceAll("\\n", "<br>").replaceAll("\\r", "").replaceAll("'", "\\'");
       
       return "{ message: '" + message + "'}";
    }

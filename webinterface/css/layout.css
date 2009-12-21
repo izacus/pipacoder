@@ -240,3 +240,9 @@ h3
 	padding-left: 200px;
 	padding-right: 200px;
 }
+
+.messagebox
+{
+	border: 2px solid;
+	background: #FFF
+}

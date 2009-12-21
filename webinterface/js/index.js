@@ -19,6 +19,12 @@ function()
 	$("#remove").click(removeFormatClick);
 	$("#encode-button").click(addJobset);
 	
+	// Modal window hide
+	$("body").click(function ()
+					{
+						$.modal.close();
+					});
+	
 	loadInputFiles();
 	loadFormatPresets();
 	loadFormats();
@@ -105,6 +111,9 @@ function loadInputFiles()
 function loadInputFilesCB(response)
 {
 	var fileListHTML = '';
+	
+	// Add "All files" option
+	fileListHTML += '<option value="ALLFILES"> -- All input files -- </option>';
 	
 	for (var i = 0; i < response.length; i++)
 	{
@@ -248,7 +257,5 @@ function showFailReason(jobid)
 
 function showFailReasonCB(response)
 {
-	console.info("Woot.");
-	
-	$("messagebox").html(response.message);
+	$.modal('<div class="messagebox">' + response.message + '</div>');
 }
