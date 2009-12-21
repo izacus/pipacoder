@@ -73,22 +73,16 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          // Available input file listing
          if (command.equals("inputfiles"))
          {
-            Log.info("[API] Listing input files... ");
-            
             responseString = getInputFilesJSON();
          }
          // Available encoding format listing
          else if (command.equals("formats"))
          {
-            Log.info("[API] Listing output formats...");
-            
             responseString = getFormatsJSON();
          }
          // Jobs in system listing
          else if (command.equals("jobs"))
          {
-            Log.info("[API] Listing jobs...");
-            
             responseString = getAllJobsJSON();
          }
          // Add new format
