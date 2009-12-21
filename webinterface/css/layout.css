@@ -19,6 +19,16 @@ a:link
 	text-decoration: none;
 }
 
+a:visited
+{
+	color: #000;
+	font-weight: bold;
+	font-size: 80%;
+	
+	font-variant: small-caps;
+	text-decoration: none;
+}
+
 a:hover
 {
 	color: #666
@@ -268,5 +278,7 @@ h3
 .messagebox
 {
 	border: 2px solid;
-	background: #FFF
+	background: #FFF;
+	
+	padding: 15px;	
 }

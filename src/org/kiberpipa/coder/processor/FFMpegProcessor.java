@@ -212,5 +212,14 @@ public class FFMpegProcessor extends VideoProcessor
    public void stop()
    {
       p.destroy();
+      
+      try
+      {
+         p.waitFor();
+      } 
+      catch (InterruptedException e)
+      {
+         return;
+      }
    }
 }
