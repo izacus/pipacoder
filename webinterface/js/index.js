@@ -30,7 +30,7 @@ function()
 	loadFormats();
 	loadJobTable();
 	
-	setInterval(loadJobTable, 5000);
+	setInterval(loadJobTable, 1500);
 }
 );
 
