@@ -15,12 +15,13 @@
     You should have received a copy of the GNU Lesser General Public License
     along with PipaCoder.  If not, see <http://www.gnu.org/licenses/>.
     
-    Copyright© 2009 Jernej Virag
+    Copyrightï¿½ 2009 Jernej Virag
   */
 
 package org.kiberpipa.coder.jobs;
 
 import org.kiberpipa.coder.Database;
+import org.kiberpipa.coder.Log;
 import org.kiberpipa.coder.formats.OutputFormat;
 import org.kiberpipa.coder.processor.FFMpegProcessor;
 import org.kiberpipa.coder.processor.VideoProcessor;
@@ -126,6 +127,8 @@ public class Job
     */
    public void fail(String message)
    {
+      Log.error("Job failed with message " + message);
+      
       this.failMessage = message;
       this.setState(JobStates.FAILED, true);
    }
@@ -173,5 +176,10 @@ public class Job
    public String getFailMessage()
    {
       return this.failMessage;
+   }
+   
+   public void setFailMessage(String failMessage)
+   {
+      this.failMessage = failMessage;
    }
 }

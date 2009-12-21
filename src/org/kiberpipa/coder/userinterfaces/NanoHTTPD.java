@@ -428,7 +428,6 @@ public class NanoHTTPD
        * "name=Jack%20Daniels&pass=Single%20Malt" ) and adds them to given
        * Properties.
        */
-      @SuppressWarnings("unchecked")
       private void decodeParms(String parms, Properties p)
             throws InterruptedException
       {

@@ -15,7 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with PipaCoder.  If not, see <http://www.gnu.org/licenses/>.
     
-    Copyright© 2009 Jernej Virag
+    Copyrightï¿½ 2009 Jernej Virag
   */
 
 package org.kiberpipa.coder.jobs;
@@ -164,5 +164,18 @@ public class JobManager implements Runnable
       jobs.addAll(this.jobs);
       
       return jobs;
+   }
+   
+   public Job getJobWithId(int id)
+   {
+      for (Job job : jobs)
+      {
+         if (job.getId() == id)
+         {
+            return job;
+         }
+      }
+      
+      return null;
    }
 }
