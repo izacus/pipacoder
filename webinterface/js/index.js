@@ -24,7 +24,7 @@ function()
 	loadFormats();
 	loadJobTable();
 	
-	setInterval(loadJobTable, 3000);
+	setInterval(loadJobTable, 5000);
 }
 );
 
@@ -212,7 +212,15 @@ function loadJobTableCB(response)
 			}
 			else
 			{
-				tableHTML += "<td>&nbsp;</td>";
+				// If job failed, add "WHY?" link instead of progress
+				if (response[i].status === 'FAILED')
+				{
+					tableHTML += '<td><a href="javascript:showFailReason(' + response[i].id + ')">Why?</a></td>';
+				}
+				else
+				{
+					tableHTML += "<td>&nbsp;</td>";	
+				}
 			}
 			
 			if (response[i].eta != null)
@@ -229,4 +237,18 @@ function loadJobTableCB(response)
 		
 		$("#jobs > tbody").append(tableHTML);
 	}
+}
+
+function showFailReason(jobid)
+{
+	var data = { id : jobid};
+	
+	$.get("/api/getfailreason", data, showFailReasonCB, "json");
+}
+
+function showFailReasonCB(response)
+{
+	console.info("Woot.");
+	
+	$("messagebox").html(response.message);
 }

@@ -108,6 +108,10 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          {
             responseString = getFormatInfoJSON(parms);
          }
+         else if (command.equals("getfailreason"))
+         {
+            responseString = getJobFailReason(parms);
+         }
          else if (command.equals("addjobs"))
          {
             responseString = addJobs(parms);
@@ -269,6 +273,38 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       
       output.setCharAt(output.length() - 1, ']');
       return output.toString();
+   }
+   
+   private String getJobFailReason(Properties params)
+   {
+      int id = -1;
+      
+      // Check if ID parameter exists
+      if (params.get("id") == null)
+      {
+         return getErrorResponse("No id sent.");
+      }
+      
+      // Check if number was sent
+      try
+      {
+         id = Integer.parseInt(params.getProperty("id"));
+      }
+      catch (NumberFormatException e)
+      {
+         return getErrorResponse("Invalid ID.");
+      }
+      
+      Job job = JobManager.getInstance().getJobWithId(id);
+      
+      if (job == null)
+      {
+         return getErrorResponse("Job doesn't exist anymore.");
+      }
+      
+      String message = job.getFailMessage() == null ? "No error message stored." : job.getFailMessage().replaceAll("\\n", "<br>");
+      
+      return "{ message: '" + message + "'}";
    }
    
    /**

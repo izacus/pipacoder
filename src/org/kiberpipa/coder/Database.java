@@ -403,6 +403,7 @@ public class Database
 	            // Set correct job state
 	            JobStates state = JobStates.valueOf(jobSet.getString("state"));
 	            job.setState(state, false);
+	            job.setFailMessage(jobSet.getString("message"));
 	            
 	            jobs.add(job);
 	         }
