@@ -77,7 +77,19 @@ public class FFMpegProcessor extends VideoProcessor
    {
       StringBuilder string = new StringBuilder();
       
-      string.append(Configuration.getValue("ffmpegdir") + "ffmpeg.exe -y");            // -y to overwrite possibly existing output
+      String executable = "";
+      String OS = System.getProperty("os.name");
+      
+      if (OS.trim().startsWith("Win"))
+      {
+         executable = "ffmpeg.exe";
+      }
+      else
+      {
+         executable = "ffmpeg";
+      }
+      
+      string.append(Configuration.getValue("ffmpegdir") + executable + " -y");         // -y to overwrite possibly existing output
       string.append(" -threads " + (Runtime.getRuntime().availableProcessors() + 1));  // Number of cores + 1 threads
       
       // Input file name
@@ -103,6 +115,7 @@ public class FFMpegProcessor extends VideoProcessor
       // Output file name
       string.append(" " + Configuration.getValue("outputdir") + job.getOutputFileName());
       
+      Log.info("[FFMPEG] Starting: " + string.toString());
       return string.toString();
    }
    
@@ -152,6 +165,17 @@ public class FFMpegProcessor extends VideoProcessor
          }
          
          ProcessLine(line);
+      }
+      
+      // Linux needs a longer time to clean up after process
+      // so we need to wait or retrieving exit value fails
+      try
+      {
+         p.waitFor();
+      } 
+      catch (InterruptedException e)
+      {
+         // Nothing
       }
       
       if (p.exitValue() != 0)

@@ -12,7 +12,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
     
-    Copyright© 2009 Jernej Virag
+    Copyrightï¿½ 2009 Jernej Virag
  */
 
 package org.kiberpipa.coder;
@@ -28,7 +28,6 @@ import org.kiberpipa.coder.userinterfaces.WebInterface;
  */
 public class Main
 {
-
    public static void main(String[] args) throws IOException
    {    	   
       JobManager.getInstance();
