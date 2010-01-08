@@ -33,7 +33,10 @@ import org.kiberpipa.coder.formats.OutputFormat;
 public class JobManager implements Runnable
 {
    // Singleton class initializer
-   private static JobManager instance = null;
+   
+   // This is volatile since the call to getInstance from multiple threads may return
+   // a not fully initialized object.
+   private volatile static JobManager instance = null;
    
    public static JobManager getInstance()
    {

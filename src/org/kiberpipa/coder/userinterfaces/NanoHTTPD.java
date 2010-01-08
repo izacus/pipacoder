@@ -115,7 +115,7 @@ public class NanoHTTPD
    /**
     * HTTP response. Return one of these from serve().
     */
-   public class Response
+   public static class Response
    {
       /**
        * Default constructor: response = HTTP_OK, data = mime = 'null'
@@ -256,7 +256,6 @@ public class NanoHTTPD
          System.err.println("Couldn't start server:\n" + ioe);
          System.exit(-1);
       }
-      nh.myFileDir = new File("");
 
       System.out.println("Now serving files in port " + port + " from \""
             + new File("").getAbsolutePath() + "\"");
@@ -326,7 +325,8 @@ public class NanoHTTPD
             if (st.hasMoreTokens())
             {
                String line = in.readLine();
-               while (line.trim().length() > 0)
+               
+               while (line != null && line.trim().length() > 0)
                {
                   int p = line.indexOf(':');
                   header.put(line.substring(0, p).trim().toLowerCase(), line
@@ -353,14 +353,18 @@ public class NanoHTTPD
                String postLine = "";
                char buf[] = new char[512];
                int read = in.read(buf);
+               
+               StringBuilder postLineSB = new StringBuilder();
+               
                while (read >= 0 && size > 0 && !postLine.endsWith("\r\n"))
                {
                   size -= read;
-                  postLine += String.valueOf(buf, 0, read);
+                  postLineSB.append(String.valueOf(buf, 0, read));
                   if (size > 0)
                      read = in.read(buf);
                }
-               postLine = postLine.trim();
+               
+               postLine = postLineSB.toString().trim();
                decodeParms(postLine, parms);
             }
 
@@ -542,27 +546,27 @@ public class NanoHTTPD
     */
    private String encodeUri(String uri)
    {
-      String newUri = "";
+      StringBuilder newUri = new StringBuilder();
       StringTokenizer st = new StringTokenizer(uri, "/ ", true);
       while (st.hasMoreTokens())
       {
          String tok = st.nextToken();
          if (tok.equals("/"))
-            newUri += "/";
+            newUri.append("/");
          else if (tok.equals(" "))
-            newUri += "%20";
+            newUri.append("%20");
          else
          {
-            // For Java 1.4 you'll want to use this instead:
+            
             try
             {
-               newUri += URLEncoder.encode(tok, "UTF-8");
+               newUri.append(URLEncoder.encode(tok, "UTF-8"));
             } 
             catch (UnsupportedEncodingException uee)
             {};
          }
       }
-      return newUri;
+      return newUri.toString();
    }
 
    private int myTcpPort;

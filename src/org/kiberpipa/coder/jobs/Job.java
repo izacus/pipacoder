@@ -93,7 +93,7 @@ public class Job
    {
       this.videoProcessor.stop();
       
-      this.fail("Cancelled by user.");
+      this.fail("Stopped by user.");
    }
    
    /**

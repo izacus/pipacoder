@@ -30,8 +30,20 @@ public class Main
 {
    public static void main(String[] args) throws IOException
    {    	   
+      // Initializes the Job manager
       JobManager.getInstance();
       // Start web interface
-      WebInterface webInt = new WebInterface(Integer.parseInt(Configuration.getValue("webport")));
+      
+      try
+      {
+         WebInterface webInt = new WebInterface(Integer.parseInt(Configuration.getValue("webport")));
+      }
+      catch(IOException e)
+      {
+         Log.error("[WebInterface] Failed to bind to socket port " + Configuration.getValue("webport"));
+         Log.error(e.getMessage());
+         
+         System.exit(1);
+      }
    }
 }
