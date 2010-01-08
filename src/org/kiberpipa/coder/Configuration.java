@@ -15,7 +15,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with PipaCoder.  If not, see <http://www.gnu.org/licenses/>.
     
-    Copyright© 2009 Jernej Virag
+    Copyrightï¿½ 2009 Jernej Virag
   */
 
 package org.kiberpipa.coder;
@@ -48,9 +48,11 @@ public class Configuration
 	 */
 	private static void parseConfig()
 	{
+	   BufferedReader reader = null;
+	   
 		try 
 		{
-			BufferedReader reader = new BufferedReader(new FileReader("pipacoder.conf"));
+			reader = new BufferedReader(new FileReader("pipacoder.conf"));
 			
 			String line = reader.readLine();
 			
@@ -74,6 +76,18 @@ public class Configuration
 		{
 			Log.error("Error reading pipacoder.conf.");
 			System.exit(-1);
+		}
+		finally
+		{
+		   if (reader != null)
+		   {
+		      try
+            {
+               reader.close();
+            }
+		      catch (IOException e)
+            {}
+		   }
 		}
 	}
 	

@@ -130,18 +130,36 @@ public class Database
 									      "state			     TEXT NOT NULL, " +       // Current job state
 									      "message            TEXT DEFAULT NULL);");   // Job state message (eg. failure cause)
 			
-			// Current version of SQLite JDBC driver doesn't support SQLite foreign keys, so instead
-			// a trigger is used to enforce cascaded deletion
-			statement.executeUpdate("CREATE TRIGGER fkd_fmt_id " +
-									      "BEFORE DELETE ON formats " +
-									      "FOR EACH ROW BEGIN " +
-									      "DELETE FROM jobs WHERE fmt_id = OLD.id; " +
-									      "END;");
+			statement.executeUpdate("CREATE TABLE presets (" +
+			                        "id               INTEGER PRIMARY KEY," +
+			                        "name             TEXT NOT NULL);");
+			
+			statement.executeUpdate("CREATE TABLE preset_format (" +
+					                  "id        INTEGER PRIMARY KEY, " +
+					                  "prst_id   INTEGER NOT NULL, " +
+					                  "fmt_id    INTEGER NOT NULL);");
+			
+         // Current version of SQLite JDBC driver doesn't support SQLite foreign keys, so instead
+         // a trigger is used to enforce cascaded deletion
+         statement.executeUpdate("CREATE TRIGGER fkd_fmt_id " +
+                                 "BEFORE DELETE ON formats " +
+                                 "FOR EACH ROW BEGIN " +
+                                 "DELETE FROM jobs WHERE fmt_id = OLD.id;" +
+                                 "DELETE FROM preset_format WHERE fmt_id = OLD.id;" +
+                                 "END;");
+			
+			// Create foreign key trigger for deleted presets
+			statement.executeUpdate("CREATE TRIGGER fkd_prst_id " +
+			                        "BEFORE DELETE ON presets " +
+			                        "FOR EACH ROW BEGIN " +
+			                        "DELETE FROM preset_format WHERE prst_id = OLD.id; " +
+			                        "END;" );
 			
 			connection.close();
 		} 
 		catch (SQLException e) 
 		{
+		   Log.error(e.getMessage());
 			Log.error("Error while creating database, check that the destination directory is writable!");
 			System.exit(-4);
 		}
@@ -289,6 +307,10 @@ public class Database
 	}
 	
 
+	/**
+	 * Updates format information into database
+	 * @throws SQLException
+	 */
    public static void updateFormat(OutputFormat format) throws SQLException
    {
       Connection dbConn = null;
@@ -338,7 +360,10 @@ public class Database
       }
    }
 	
-	
+	/**
+	 * Removes format from database
+	 * @param formatId
+	 */
 	public static void removeFormat(int formatId)
 	{
 	     Connection dbConn = null;
@@ -452,6 +477,8 @@ public class Database
          statement.setInt(3, job.getId());
          
          statement.executeUpdate();
+         
+         statement.close();
       }
       catch (SQLException e)
       {

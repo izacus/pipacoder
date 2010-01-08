@@ -45,7 +45,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
    public WebInterface(int port) throws IOException
    {
       super(port);
-      
+
       Log.info("Web interface up and running on port " + port);
    }
 
@@ -68,7 +68,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       // Check if API call or file request command was issued
       if (command != null)
       {
-         String responseString = null;
+         String responseString = "";
          
          // Available input file listing
          if (command.equals("inputfiles"))

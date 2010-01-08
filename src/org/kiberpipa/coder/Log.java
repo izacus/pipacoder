@@ -20,6 +20,11 @@ public class Log
        logger.info(logLine);
     }
     
+    public static void warn(String logLine)
+    {
+       logger.warning(logLine);
+    }
+    
     public static void error(String logLine)
     {
        logger.severe(logLine);

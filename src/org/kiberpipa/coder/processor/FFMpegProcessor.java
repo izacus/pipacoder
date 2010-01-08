@@ -175,7 +175,7 @@ public class FFMpegProcessor extends VideoProcessor
       } 
       catch (InterruptedException e)
       {
-         // Nothing
+         Log.warn("Waiting for process to terminate was interrupted.");
       }
       
       if (p.exitValue() != 0)
