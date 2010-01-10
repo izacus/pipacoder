@@ -370,6 +370,8 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       
       int id = -1;
       String formatName = null;
+      String suffix = null;
+      boolean twopass = false;
       String vFormat = null;
       int vBitrate = 0;
       String vResolution = null;
@@ -379,8 +381,6 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       int aSampleRate = 0;
       
       String ffmpegParams = null;
-      
-      String suffix = null;
       
       // Validation
       try
@@ -403,6 +403,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          
          id = Integer.parseInt(params.getProperty("id"));
          formatName = params.getProperty("formatname");
+         twopass = params.containsKey("twopass") ? Boolean.parseBoolean(params.getProperty("twopass")) : false;
          vFormat = params.getProperty("vformat");
          vBitrate = Integer.parseInt(params.getProperty("vbitrate"));
          vResolution = params.getProperty("vresolution");
@@ -437,7 +438,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       }
       
       // Create new format
-      id = FormatManager.getInstance().addFormat(formatName, suffix, vFormat, videoX, videoY, vBitrate, aFormat, aChannels, aSampleRate, aBitrate, ffmpegParams);
+      id = FormatManager.getInstance().addFormat(formatName, suffix, twopass, vFormat, videoX, videoY, vBitrate, aFormat, aChannels, aSampleRate, aBitrate, ffmpegParams);
       
       if (id == -1)
       {
@@ -458,6 +459,8 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       
       int id = -1;
       String formatName = null;
+      String suffix = null;
+      boolean twopass = false;
       String vFormat = null;
       int vBitrate = 0;
       String vResolution = null;
@@ -467,7 +470,6 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       int aSampleRate = 0;
       String ffmpegParams = null;
       
-      String suffix = null;
       
       // Validation
       try
@@ -490,6 +492,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          
          id = Integer.parseInt(params.getProperty("id"));
          formatName = params.getProperty("formatname");
+         twopass = params.containsKey("twopass") ? Boolean.parseBoolean(params.getProperty("twopass")) : false;
          vFormat = params.getProperty("vformat");
          vBitrate = Integer.parseInt(params.getProperty("vbitrate"));
          vResolution = params.getProperty("vresolution");
@@ -526,7 +529,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       // Create new format
       try
       {
-         FormatManager.getInstance().updateFormat(id, formatName, suffix, vFormat, videoX, videoY, vBitrate, aFormat, aChannels, aSampleRate, aBitrate, ffmpegParams);
+         FormatManager.getInstance().updateFormat(id, formatName, suffix, twopass, vFormat, videoX, videoY, vBitrate, aFormat, aChannels, aSampleRate, aBitrate, ffmpegParams);
       }
       catch (Exception e)
       {
@@ -609,6 +612,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       
       response.append("{id: " + format.getId() + ",");
       response.append(" formatname: '" + format.getName() + "',");
+      response.append(" twopass : " + format.isTwopass() + ", ");
       response.append(" vformat:'" + format.getVideoFormat() + "',");
       response.append(" vbitrate: " + format.getVideoBitrate() + ",");
       response.append(" vresolution: '" + format.getVideoResolution() + "',");

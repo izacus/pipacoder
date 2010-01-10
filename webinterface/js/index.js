@@ -259,7 +259,7 @@ function loadJobTableCB(response)
 			
 			tableHTML += '<tr><td>' + response[i].filename + '</td><td>' + response[i].format + '</td><td style="color:' + responseColor + '">' + response[i].status + '</td>';
 			
-			if (response[i].progress !== null)
+			if (response[i].progress != null)
 			{
 				tableHTML += "<td>" + response[i].progress + "</td>";
 			}

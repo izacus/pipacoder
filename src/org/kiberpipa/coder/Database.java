@@ -110,7 +110,8 @@ public class Database
 			statement.executeUpdate("CREATE TABLE formats (" +
 									      "id  			   INTEGER PRIMARY KEY, " +		// Format ID
 									      "name	 		   TEXT NOT NULL, " +	         // Visible name			
-									      "appendix		TEXT NOT NULL UNIQUE, " +     // File name appendix
+									      "appendix		TEXT NOT NULL, " +            // File name appendix
+									      "twopass       BOOLEAN NOT NULL," +          // Requires two-pass encoding
 									      "videoFormat 	TEXT, " +                     // Output video format
 									      "videoX			INTEGER, " +                  // Output video resolution
 									      "videoY 		   INTEGER, " +
@@ -203,6 +204,7 @@ public class Database
 	         OutputFormat format = new OutputFormat(results.getInt("id"), 
 	                                                results.getString("name"),
 	                                                results.getString("appendix"),
+	                                                results.getBoolean("twopass"),
 	                                                results.getString("videoFormat"),
 	                                                results.getInt("videoX"),
 	                                                results.getInt("videoY"),
@@ -254,24 +256,25 @@ public class Database
 	            dbConn.setAutoCommit(false);
 	            
 	            PreparedStatement statement = dbConn.prepareStatement("INSERT INTO formats" +
-	                                                                  "(name, appendix, videoFormat, videoX, videoY, videoBitrate, audioFormat, audioChannels, audioSamplerate, audioBitrate, ffmpegParams)" +
-	                                                                  " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+	                                                                  "(name, appendix, twopass, videoFormat, videoX, videoY, videoBitrate, audioFormat, audioChannels, audioSamplerate, audioBitrate, ffmpegParams)" +
+	                                                                  " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 	            
 	            statement.setString(1, format.getName());
 	            statement.setString(2, format.getFileAppendix());
+	            statement.setBoolean(3, format.isTwopass());
 	            // Video
-	            statement.setString(3, format.getVideoFormat());
-	            statement.setInt(4, format.getVideoResX());
-	            statement.setInt(5, format.getVideoResY());
-	            statement.setInt(6, format.getVideoBitrate());
+	            statement.setString(4, format.getVideoFormat());
+	            statement.setInt(5, format.getVideoResX());
+	            statement.setInt(6, format.getVideoResY());
+	            statement.setInt(7, format.getVideoBitrate());
 	            // Audio
-	            statement.setString(7, format.getAudioFormat());
-	            statement.setInt(8, format.getAudioChannels());
-	            statement.setInt(9, format.getAudioSamplerate());
-	            statement.setInt(10, format.getAudioBitrate());
+	            statement.setString(8, format.getAudioFormat());
+	            statement.setInt(9, format.getAudioChannels());
+	            statement.setInt(10, format.getAudioSamplerate());
+	            statement.setInt(11, format.getAudioBitrate());
 	            
 	            // FFMPEG parameters
-	            statement.setString(11, format.getFfmpegParams());
+	            statement.setString(12, format.getFfmpegParams());
 	            
 	            statement.executeUpdate();
 	   
@@ -319,26 +322,27 @@ public class Database
       {
          dbConn = connectSQLite();
          
-         PreparedStatement statement = dbConn.prepareStatement("UPDATE formats SET name = ?, appendix = ?, videoFormat = ?, videoX = ?, " +
+         PreparedStatement statement = dbConn.prepareStatement("UPDATE formats SET name = ?, appendix = ?, twopass = ?, videoFormat = ?, videoX = ?, " +
          		                                                "videoY = ?, videoBitrate = ?, audioFormat = ?, audioChannels = ?, audioSamplerate = ?, audioBitrate = ?, ffmpegParams = ? WHERE id = ?");
          
          statement.setString(1, format.getName());
          statement.setString(2, format.getFileAppendix());
+         statement.setBoolean(3, format.isTwopass());
          // Video
-         statement.setString(3, format.getVideoFormat());
-         statement.setInt(4, format.getVideoResX());
-         statement.setInt(5, format.getVideoResY());
-         statement.setInt(6, format.getVideoBitrate());
+         statement.setString(4, format.getVideoFormat());
+         statement.setInt(5, format.getVideoResX());
+         statement.setInt(6, format.getVideoResY());
+         statement.setInt(7, format.getVideoBitrate());
          // Audio
-         statement.setString(7, format.getAudioFormat());
-         statement.setInt(8, format.getAudioChannels());
-         statement.setInt(9, format.getAudioSamplerate());
-         statement.setInt(10, format.getAudioBitrate());
+         statement.setString(8, format.getAudioFormat());
+         statement.setInt(9, format.getAudioChannels());
+         statement.setInt(10, format.getAudioSamplerate());
+         statement.setInt(11, format.getAudioBitrate());
          
          // FFmpeg parameters
-         statement.setString(11, format.getFfmpegParams());
+         statement.setString(12, format.getFfmpegParams());
          
-         statement.setInt(12, format.getId());
+         statement.setInt(13, format.getId());
          
          statement.executeUpdate();
       }

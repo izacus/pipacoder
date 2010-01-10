@@ -31,6 +31,7 @@ public class OutputFormat
 
    private String name;
    private String fileAppendix;
+   private boolean twopass;
    
    // VIDEO Parameters
    private String videoFormat;
@@ -50,6 +51,7 @@ public class OutputFormat
    public OutputFormat(int id,
  		 			        String name,
                        String appendix,
+                       boolean twopass,
                        String vFormat,
                        int vResolutionX,
                        int vResolutionY,
@@ -64,6 +66,7 @@ public class OutputFormat
         this.name = name; 
     	 
         this.fileAppendix = appendix;
+        this.twopass = twopass;
         
         this.videoFormat = vFormat;
         this.videoBitrate = vBitrate;
@@ -145,5 +148,10 @@ public class OutputFormat
    public String getFfmpegParams()
    {
       return ffmpegParams;
+   }
+
+   public boolean isTwopass()
+   {
+      return twopass;
    }
 }
