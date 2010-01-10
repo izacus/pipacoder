@@ -21,6 +21,7 @@
 package org.kiberpipa.coder.processor;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.LinkedHashMap;
@@ -50,10 +51,14 @@ public class FFMpegProcessor extends VideoProcessor
    private Process p = null;
    private LinkedHashMap<Integer, String> lastLineOutput;
    private int lineCount = 0;
+   private boolean twopass = false;
+   private int currentPass = 1;
    
    public FFMpegProcessor(Job processingJob)
    {
       super(processingJob);
+      
+      twopass = processingJob.getOutputFormat().isTwopass();
       
       // Create last ffmpeg output lines LRU
       // It will hold last 10 lines of unrecognised ffmpeg output
@@ -93,7 +98,8 @@ public class FFMpegProcessor extends VideoProcessor
       string.append(" -threads " + (Runtime.getRuntime().availableProcessors() + 1));  // Number of cores + 1 threads
       
       // Input file name
-      string.append(" -i " + Configuration.getValue("inputdir") + job.getInputFileName());
+      File inputFile = new File(Configuration.getValue("inputdir") + File.separatorChar + job.getInputFileName());
+      string.append(" -i " + inputFile.getPath());
       
       OutputFormat outputFormat = job.getOutputFormat();
       
@@ -102,6 +108,15 @@ public class FFMpegProcessor extends VideoProcessor
       // Sets bitrate with two parameters (certain codecs use the first, others the second)
       string.append(" -b " + outputFormat.getVideoBitrate() + " -bt " + outputFormat.getVideoBitrate());
       string.append(" -s " + outputFormat.getVideoResolution());
+      
+      // Set pass for twopass
+      if (twopass)
+      {
+         string.append(" -pass " + currentPass);
+         
+         File logFile = new File(Configuration.getValue("outputdir") + File.separatorChar + job.getOutputFileName() + "-log");
+         string.append(" -passlogfile " + logFile.getPath());
+      }
       
       // Audio options
       string.append(" -acodec " + outputFormat.getAudioFormat());
@@ -113,7 +128,8 @@ public class FFMpegProcessor extends VideoProcessor
       string.append(" " + outputFormat.getFfmpegParams() + " ");
       
       // Output file name
-      string.append(" " + Configuration.getValue("outputdir") + job.getOutputFileName());
+      File outputFile = new File(Configuration.getValue("outputdir") + File.separatorChar + job.getOutputFileName());
+      string.append(" " + outputFile.getPath());
       
       Log.info("[FFMPEG] Starting: " + string.toString());
       return string.toString();
@@ -123,9 +139,8 @@ public class FFMpegProcessor extends VideoProcessor
    {
       new Thread(this).start();
    }
-
-   @Override
-   public void run()
+   
+   private void startPass()
    {
       String execString = commandString();
       
@@ -192,7 +207,23 @@ public class FFMpegProcessor extends VideoProcessor
       }
       else
       {
-         job.setState(JobStates.DONE);
+         if (!twopass || (twopass && currentPass == 2))
+         {
+            job.setState(JobStates.DONE);
+         }
+      }
+   }
+
+   @Override
+   public void run()
+   {
+      startPass();
+      
+      // Start the second pass of twopass encoding
+      if (twopass)
+      {
+         currentPass = 2;
+         startPass();
       }
    }
    
@@ -219,7 +250,21 @@ public class FFMpegProcessor extends VideoProcessor
       {
          float currentTime = Float.parseFloat(progressMatcher.group(1).trim());
          
-         job.setProgress(currentTime * 100/videoDuration);
+         if (!twopass)
+         {
+            job.setProgress(currentTime * 100/videoDuration);
+         }
+         else
+         {
+            float progress = (currentTime * 100/videoDuration)/2; 
+            
+            if (currentPass == 2)
+            {
+               progress += 50.0f;
+            }
+            
+            job.setProgress(progress);
+         }
          
          return;
       }
@@ -242,8 +287,8 @@ public class FFMpegProcessor extends VideoProcessor
          p.waitFor();
       } 
       catch (InterruptedException e)
-      {
-         return;
-      }
+      {}
+      
+      job.fail("Stopped by user.");
    }
 }

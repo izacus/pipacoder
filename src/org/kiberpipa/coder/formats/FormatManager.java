@@ -81,6 +81,7 @@ public class FormatManager
 	 */
 	public int addFormat(String name,
 						      String fileAppendix,
+						      boolean twopass,
 						      String videoFormat,
 						      int videoX,
 						      int videoY,
@@ -94,7 +95,8 @@ public class FormatManager
 		// Format ID is set by the database query
 		OutputFormat newFormat = new OutputFormat(0, 
 												            name, 
-												            fileAppendix, 
+												            fileAppendix,
+												            twopass,
 												            videoFormat, 
 												            videoX, 
 												            videoY, 
@@ -126,6 +128,7 @@ public class FormatManager
 	public void updateFormat(int id,
 	                         String name,
 	                         String fileAppendix,
+	                         boolean twopass,
 	                         String videoFormat,
 	                         int videoX,
 	                         int videoY,
@@ -143,7 +146,8 @@ public class FormatManager
 	   
 	   OutputFormat updatedFormat = new OutputFormat(id, 
                                                     name, 
-                                                    fileAppendix, 
+                                                    fileAppendix,
+                                                    twopass,
                                                     videoFormat, 
                                                     videoX, 
                                                     videoY, 

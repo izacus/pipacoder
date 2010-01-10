@@ -97,7 +97,7 @@ public class Configuration
 	 * @return setting value
 	 */
 	public static String getValue(String identifier)
-	{		
+	{
 		return configurationOptions.get(identifier);
 	}
 }

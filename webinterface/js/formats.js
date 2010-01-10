@@ -187,6 +187,10 @@ function FormatInfoReceived(response)
 	{
 		$fields[i].value = response[$fields[i].name];
 	}
+	
+	// Set twopass checkbox
+	$("#twopass").attr("checked", response['twopass']);
+	$("#twopass").val("true");
 }
 
 function clearFormatForm()
@@ -197,6 +201,8 @@ function clearFormatForm()
 	{
 		$fields[i].value = '';
 	}
+	
+	$("#twopass").val("true");
 	
 	// Set current ID to -1
 	$("input#id").val(-1);
