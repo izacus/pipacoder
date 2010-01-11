@@ -322,6 +322,7 @@ public class FFMpegProcessor extends VideoProcessor
       {
          if (!twopass || (twopass && currentPass == 2))
          {
+            Log.info("Job completed: " + job.getInputFileName() + " => " + job.getOutputFormat().getName());
             job.setState(JobStates.DONE);
          }
       }
@@ -384,8 +385,6 @@ public class FFMpegProcessor extends VideoProcessor
       }
       
       lastLineOutput.put(lineCount++, line);
-      
-      System.out.println(line);
    }
 
    @Override
