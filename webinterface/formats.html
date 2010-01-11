@@ -43,8 +43,9 @@
 					<br>
 				</div>
 				<div class="format-boxes">
-					<input type="text" id="vformat" name="vformat" class="format-textbox"></input>
-					<br><span class="format-hints">Video codec value for ffmpeg. Example: libx264</span>
+					<select id="vformat" name="vformat"></select>
+					
+					<br><span class="format-hints" id="vformathint">&nbsp;</span>
 					<br><br>
 					<input type="text" id="vbitrate" name="vbitrate" class="format-textbox"></input>
 					<br><span class="format-hints">Video bitrate value in <em>bps</em> without units</span>
@@ -66,8 +67,8 @@
 					<br>
 				</div>
 				<div class="format-boxes">
-					<input type="text" id="aformat" name="aformat" class="format-textbox"></input>
-					<br><span class="format-hints">Audio codec for ffmpeg. Example: libfaac</span>
+					<select id="aformat" name="aformat"></select>
+					<br><span class="format-hints" id="aformathint">&nbsp;</span>
 					<br><br>
 					<input type="text" id="abitrate" name="abitrate" class="format-textbox"></input>
 					<br><span class="format-hints">Audio bitrate in <em>bps</em>. Example: 128000</span>

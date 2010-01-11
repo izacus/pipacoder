@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -34,6 +35,7 @@ import org.kiberpipa.coder.formats.OutputFormat;
 import org.kiberpipa.coder.jobs.Job;
 import org.kiberpipa.coder.jobs.JobManager;
 import org.kiberpipa.coder.jobs.JobStates;
+import org.kiberpipa.coder.processor.FFMpegProcessor;
 
 public class WebInterface extends NanoHTTPD implements UserInterface
 { 
@@ -80,6 +82,10 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          {
             responseString = getFormatsJSON();
          }
+         else if (command.equals("supportedformats"))
+         {
+            responseString = getSupportedFormats();
+         }
          // Jobs in system listing
          else if (command.equals("jobs"))
          {
@@ -121,7 +127,41 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       // Attempt to serve file if there is no URL match
       return serveFile(uri, header, new File("webinterface"), false);
    }
-   
+
+   private String getSupportedFormats()
+   {
+      // Get supported formats from FFMPEG processor
+      HashMap<String, String> formats = FFMpegProcessor.getSupportedVideoFormats();
+      
+      StringBuilder response = new StringBuilder();
+      response.append("{video:[");
+      
+      for (String abbrev : formats.keySet())
+      {
+         response.append("{abbrev:'" + abbrev.replaceAll("'", "\\'") + "',name:'" + formats.get(abbrev).replaceAll("'", "\\'") + "'},");
+      }
+      
+      // Delete trailing comma
+      response.deleteCharAt(response.length() - 1);
+      
+      response.append("], audio:[");
+      
+      formats = FFMpegProcessor.getSupportedAudioFormats();
+      
+      for (String abbrev : formats.keySet())
+      {
+         response.append("{abbrev:'" + abbrev.replaceAll("'", "\\'") + "',name:'" + formats.get(abbrev).replaceAll("'", "\\'") + "'},");
+      }
+      // Delete trailing comma
+      response.deleteCharAt(response.length() - 1);
+
+      
+      response.append("]}");
+      
+      
+      return response.toString();
+   }
+
    /**
     * Adds set of new jobs to Job manager passed as a filename and list of ids
     * @param parms parameters, which must include <i>filename</i> with filename string and <i>formats</i> with comma delimited format ID list
