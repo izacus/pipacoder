@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,7 +46,71 @@ public class FFMpegProcessor extends VideoProcessor
    {
       durationPattern = Pattern.compile("Duration: ([0-9][0-9]):([0-9][0-9]):([0-9][0-9])\\.([0-9][0-9]), start: .*");
       progressPattern = Pattern.compile("frame=[0-9 ]+ fps=[0-9 ]+ q=[0-9\\. ]+ size=[0-9 ]+kB time=([0-9\\.]+) .*");
+      
+      parseAvailableFormats();
    }
+   
+   /**
+    * Runs ffmpeg process and parses all available audio and video formats for help display
+    */
+   private static void parseAvailableFormats()
+   {
+      Log.info("Parsing available FFMPEG output formats...");
+      
+      String command = "";
+      String OS = System.getProperty("os.name");
+      
+      if (OS.trim().startsWith("Win"))
+      {
+         command = "ffmpeg.exe";
+      }
+      else
+      {
+         command = "ffmpeg";
+      }
+      
+      command = Configuration.getValue("ffmpegdir") + command + " -formats";
+      
+      // Execute command and parse
+      LinkedList<String> outputLines = new LinkedList<String>();
+      String line = null;
+      
+      Process process = null;
+      
+      try
+      {
+         process = Runtime.getRuntime().exec(command);
+      } 
+      catch (IOException e)
+      {
+         Log.error("Failed to execute FFMpeg for parsing: " + e.getMessage());
+      }
+      
+      try
+      {
+         BufferedReader inputStreamReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+         
+         while(inputStreamReader.ready())
+         {
+            line = inputStreamReader.readLine();
+            
+            if (line == null)
+               break;
+            
+            outputLines.add(line);
+         }
+        
+      }
+      catch(IOException e)
+      {
+         // Parsing complete, do nothing
+      }
+      
+      Log.info("Finished parsing available FFMpeg formats.");
+   }
+   
+   
+   
    
    private int videoDuration;
    private Process p = null;
@@ -140,7 +205,7 @@ public class FFMpegProcessor extends VideoProcessor
       new Thread(this).start();
    }
    
-   private void startPass()
+   private void doEncodingPass()
    {
       String execString = commandString();
       
@@ -217,13 +282,13 @@ public class FFMpegProcessor extends VideoProcessor
    @Override
    public void run()
    {
-      startPass();
+      doEncodingPass();
       
       // Start the second pass of twopass encoding
-      if (twopass)
+      if (twopass && job.getState() == JobStates.RUNNING)
       {
          currentPass = 2;
-         startPass();
+         doEncodingPass();
       }
    }
    
@@ -256,6 +321,7 @@ public class FFMpegProcessor extends VideoProcessor
          }
          else
          {
+            // In two pass encoding the first pass goes from 0 - 50%, second pass 50 - 100%
             float progress = (currentTime * 100/videoDuration)/2; 
             
             if (currentPass == 2)
