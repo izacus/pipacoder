@@ -1,15 +1,45 @@
 /**
- * @author Jernej
+ * @author Jernej Virag
  */
 
 $(document).ready(function()
 {	
 	loadFormats();
+	loadAvailableFormats();
 	// Add handler for Add/Update button
 	$("#addupdatebtn").click(AddRemoveClickStart);
 	$("#removebtn").click(RemoveClickStart);
 	$("#formatedit").change(FormatClick);
+	$("#vformat").change(updateFormatHint);
+	$("#aformat").change(updateFormatHint);
 });
+
+function loadAvailableFormatsCB(response)
+{
+	var html = '<option value="null"> -- Select one -- </option>';
+	
+	// Fill video format array
+	for (var i = 0; i < response['video'].length; i++)
+	{
+		html += '<option value="' + response.video[i].abbrev + '">' + response.video[i].name + '</option>';
+	}
+	
+	$("#vformat").html(html);
+	
+	html = '<option value="null"> -- Select one -- </option>';
+	
+	for (i = 0; i < response['audio'].length; i++)
+	{
+		html += '<option value="' + response.audio[i].abbrev + '">' + response.audio[i].name + '</option>';
+	}
+	
+	$("#aformat").html(html);
+}
+
+function loadAvailableFormats()
+{
+	$.get("/api/supportedformats", null, loadAvailableFormatsCB, "json");
+}
 
 function loadFormats(selectid)
 {
@@ -191,6 +221,7 @@ function FormatInfoReceived(response)
 	// Set twopass checkbox
 	$("#twopass").attr("checked", response['twopass']);
 	$("#twopass").val("true");
+	updateFormatHint();
 }
 
 function clearFormatForm()
@@ -206,4 +237,31 @@ function clearFormatForm()
 	
 	// Set current ID to -1
 	$("input#id").val(-1);
+	
+	// Reset format selection boxes
+	$("#vformat").val("null");
+	$("#aformat").val("null");
+	updateFormatHint();
+}
+
+function updateFormatHint()
+{
+	
+	if ($("#vformat").val() == "null")
+	{
+		$("#vformathint").html("&nbsp;");
+	}
+	else
+	{
+		$("#vformathint").html("Internal name: " + $("#vformat").val());
+	}
+	
+	if ($("#aformat").val() == "null")
+	{
+		$("#aformathint").html("&nbsp;");
+	}
+	else
+	{
+		$("#aformathint").html("Internal name: " + $("#aformat").val());
+	}
 }

@@ -24,8 +24,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,6 +41,9 @@ public class FFMpegProcessor extends VideoProcessor
    // Static patterns
    private static Pattern durationPattern;
    private static Pattern progressPattern;
+   
+   private static HashMap<String, String> supportedVideoFormats = null;
+   private static HashMap<String, String> supportedAudioFormats = null;
    
    static
    {
@@ -71,46 +74,91 @@ public class FFMpegProcessor extends VideoProcessor
       
       command = Configuration.getValue("ffmpegdir") + command + " -formats";
       
-      // Execute command and parse
-      LinkedList<String> outputLines = new LinkedList<String>();
-      String line = null;
       
-      Process process = null;
+      Process ffmpeg = null;
       
       try
       {
-         process = Runtime.getRuntime().exec(command);
+         ffmpeg = Runtime.getRuntime().exec(command);
       } 
       catch (IOException e)
       {
-         Log.error("Failed to execute FFMpeg for parsing: " + e.getMessage());
+         Log.error("FATAL: Cannot execute FFMpeg!" + e.getMessage());
+         System.exit(1);
       }
+      
+      BufferedReader output = new BufferedReader(new InputStreamReader(ffmpeg.getInputStream()));
+      
+      String line = "";
+      int newLine = 0;
+      
+      supportedAudioFormats = new HashMap<String, String>();
+      supportedVideoFormats = new HashMap<String, String>();
       
       try
       {
-         BufferedReader inputStreamReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-         
-         while(inputStreamReader.ready())
+         while((line = output.readLine()) != null)
          {
-            line = inputStreamReader.readLine();
-            
-            if (line == null)
-               break;
-            
-            outputLines.add(line);
+                 if(line.equals(""))
+                 {
+                         newLine++;
+                 }
+                 
+                 // Finish parsing at position of the second empty line
+                 if(newLine == 2)
+                 {
+                         break;
+                 }
+                 
+                 if(!line.equals("File formats:") && !line.equals("Codecs:") && !line.contains("Muxing supported"))
+                 {
+                      // Codecs are listed after first newline
+                      if(newLine == 1)
+                      {
+                         if(!line.equals("") && line.charAt(2) == 'E')
+                         {
+                             // Supported video format found
+                             if(line.charAt(3) == 'V')
+                             {
+                                String abbrev = line.substring(8, line.indexOf(' ', 8));
+                                String name = line.substring(line.indexOf(' ', 8)).trim();
+                                
+                                supportedVideoFormats.put(abbrev, name);
+                             }
+                             // Supported audio encoding format found
+                             else if(line.charAt(3) == 'A')
+                             {
+                                String abbrev = line.substring(8, line.indexOf(' ', 8));
+                                String name = line.substring(line.indexOf(' ', 8)).trim();
+                                
+                                supportedAudioFormats.put(abbrev, name);
+                             }
+                         }
+                      }
+                 }
          }
-        
-      }
-      catch(IOException e)
+         
+         output.close();
+      } 
+      catch (IOException e)
       {
-         // Parsing complete, do nothing
+         Log.warn("Error parsing FFMPEG formats: " + e.getMessage());
+         
       }
       
+      ffmpeg.destroy();
       Log.info("Finished parsing available FFMpeg formats.");
    }
    
+   public static HashMap<String, String> getSupportedVideoFormats()
+   {
+      return supportedVideoFormats;
+   }
    
-   
+   public static HashMap<String, String> getSupportedAudioFormats()
+   {
+      return supportedAudioFormats;
+   }
    
    private int videoDuration;
    private Process p = null;
