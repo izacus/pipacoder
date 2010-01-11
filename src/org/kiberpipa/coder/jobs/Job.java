@@ -178,6 +178,10 @@ public class Job
    
    public void setFailMessage(String failMessage)
    {
-      this.failMessage = failMessage;
+      // This is a onetime set only field
+      if (this.failMessage == null)
+      {
+         this.failMessage = failMessage;
+      }
    }
 }
