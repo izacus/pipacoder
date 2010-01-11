@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.kiberpipa.coder.Configuration;
 import org.kiberpipa.coder.Database;
 import org.kiberpipa.coder.Log;
 import org.kiberpipa.coder.formats.OutputFormat;
@@ -53,7 +54,7 @@ public class JobManager implements Runnable
    
    private Object jobMonitor;
    
-   private Job runningJob;
+   private Job[] runningJobs;
    
    
    private JobManager()
@@ -61,8 +62,21 @@ public class JobManager implements Runnable
       // Those datastructures are accessed from multiple threads
       jobs = Collections.synchronizedList(new ArrayList<Job>());
       jobQueue = Collections.synchronizedList(new LinkedList<Job>());
-      runningJob = null;
       jobMonitor = new Object();
+      
+      int concurrentJobs = 1;
+      
+      try
+      {
+         concurrentJobs = Integer.parseInt(Configuration.getValue("concurrentJobs"));
+      }
+      catch (Exception e)
+      {
+         Log.warn("Errorenous concurrent jobs configuration parameter: " + e.getMessage());
+         concurrentJobs = 1;
+      }
+
+      runningJobs = new Job[concurrentJobs];
       
       // Get jobs from database
       ArrayList<Job> jobs = Database.getJobs();
@@ -90,8 +104,26 @@ public class JobManager implements Runnable
      {
         synchronized (jobMonitor)
         {
+           for (int i = 0; i < runningJobs.length; i++)
+           {
+              if (runningJobs[i] != null && 
+                  (runningJobs[i].getState() == JobStates.DONE || runningJobs[i].getState() == JobStates.FAILED))
+              {
+                 runningJobs[i] = null;
+              }
+              
+              if (runningJobs[i] == null && !jobQueue.isEmpty())
+              {
+                 Job nextJob = jobQueue.remove(0);
+                 
+                 runningJobs[i] = nextJob;
+                 nextJob.start();
+              }
+           }
+           
+           
            // Remove complete job from the variable
-           if (runningJob != null &&
+           /*(if (runningJob != null &&
                (runningJob.getState() == JobStates.DONE || runningJob.getState() == JobStates.FAILED))
            {
               runningJob = null;
@@ -106,7 +138,7 @@ public class JobManager implements Runnable
               
               runningJob = nextJob;
               nextJob.start();
-           }
+           } */
            
            // TODO: check output folder and remove done jobs without associated files
            
