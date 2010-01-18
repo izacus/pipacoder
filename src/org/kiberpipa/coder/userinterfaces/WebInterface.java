@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -136,7 +137,10 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       StringBuilder response = new StringBuilder();
       response.append("{video:[");
       
-      for (String abbrev : formats.keySet())
+      LinkedList<String> keys = new LinkedList<String>(formats.keySet());
+      Collections.sort(keys);
+      
+      for (String abbrev : keys)
       {
          response.append("{abbrev:'" + abbrev.replaceAll("'", "\\'") + "',name:'" + formats.get(abbrev).replaceAll("'", "\\'") + "'},");
       }
