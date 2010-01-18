@@ -151,8 +151,10 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       response.append("], audio:[");
       
       formats = FFMpegProcessor.getSupportedAudioFormats();
+      keys = new LinkedList<String>(formats.keySet());
+      Collections.sort(keys);
       
-      for (String abbrev : formats.keySet())
+      for (String abbrev : keys)
       {
          response.append("{abbrev:'" + abbrev.replaceAll("'", "\\'") + "',name:'" + formats.get(abbrev).replaceAll("'", "\\'") + "'},");
       }
