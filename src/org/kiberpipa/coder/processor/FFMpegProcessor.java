@@ -231,14 +231,14 @@ public class FFMpegProcessor extends VideoProcessor
          string.append(" -passlogfile " + logFile.getPath());
       }
       
+      // Add possible additional options
+      string.append(" " + outputFormat.getFfmpegParams() + " ");
+      
       // Audio options
       string.append(" -acodec " + outputFormat.getAudioFormat());
       string.append(" -ab " + outputFormat.getAudioBitrate());
       string.append(" -ar " + outputFormat.getAudioSamplerate());
       string.append(" -ac " + outputFormat.getAudioChannels());
-      
-      // Add possible additional options
-      string.append(" " + outputFormat.getFfmpegParams() + " ");
       
       // Output file name
       File outputFile = new File(Configuration.getValue("outputdir") + File.separatorChar + job.getOutputFileName());
