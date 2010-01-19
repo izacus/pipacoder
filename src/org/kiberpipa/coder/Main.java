@@ -22,6 +22,8 @@ import java.io.IOException;
 import org.kiberpipa.coder.jobs.JobManager;
 import org.kiberpipa.coder.userinterfaces.WebInterface;
 
+import com.sun.jna.Platform;
+
 /**
  * @author Jernej Virag
  *
@@ -43,16 +45,22 @@ public class Main
          System.exit(1);
       }
       
-      // If we're running on linux as root, drop privileges
-      String osString = System.getProperty("os.name");
+      // If we're running on Linux as root drop privileges
       
-      if (!osString.trim().startsWith("Win"))
+      if (Platform.isLinux())
       {
          if (OS.getUID() == 0)
          {
-            int uid = Integer.valueOf(Configuration.getValue("userid"));
-            Log.info("Running as root, dropping privileges to " + uid);
-            OS.setUID(uid);
+        	Log.info("Running as root, dropping privileges.");
+        	try
+        	{
+        		int uid = Integer.valueOf(Configuration.getValue("userid"));
+        		OS.setUID(uid);
+        	}
+        	catch (NumberFormatException e)
+        	{
+        		Log.error("Missing or invalid userid setting in configuration file for privileges drop!");
+        	}
          }
       }
       

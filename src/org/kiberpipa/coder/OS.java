@@ -20,8 +20,11 @@
 
 package org.kiberpipa.coder;
 
+import java.io.File;
+
 import com.sun.jna.Library;
 import com.sun.jna.Native;
+import com.sun.jna.Platform;
 
 /**
  * This class contain OS specific JNA-calling code
@@ -32,19 +35,33 @@ public class OS
 {
    private interface UIDLib extends Library
    {
-      UIDLib INSTANCE = (UIDLib)Native.loadLibrary("libuid.so", UIDLib.class);
-      
       int getUID();
       int setUID(int uid);
    }
    
+   private static UIDLib uidLib = null;
+   
+   static
+   {
+	   System.setProperty("jna.library.path", new File(System.getProperty("user.dir") + File.separatorChar + "lib").getPath());
+	   
+	   if (Platform.is64Bit())
+	   {
+		   uidLib = (UIDLib)Native.loadLibrary("uid", UIDLib.class);
+	   }
+	   else
+	   {
+		   uidLib = (UIDLib)Native.loadLibrary("uid32", UIDLib.class);
+	   }
+   }
+   
    public static int setUID(int uid)
    {
-      return UIDLib.INSTANCE.setUID(uid);
+      return uidLib.setUID(uid);
    }
    
    public static int getUID()
    {
-      return UIDLib.INSTANCE.getUID();
+      return uidLib.getUID();
    }
 }
