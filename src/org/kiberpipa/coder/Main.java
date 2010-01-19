@@ -33,9 +33,11 @@ public class Main
    public static void main(String[] args) throws IOException
    {  
       // Initialize web interface
+      WebInterface webInterface = null;
+      
       try
       {
-         WebInterface webInterface = new WebInterface(Integer.parseInt(Configuration.getValue("webport")));
+         webInterface = new WebInterface(Integer.parseInt(Configuration.getValue("webport")));
          Log.info("Running interface is " + webInterface.getId());
       }
       catch(IOException e)
@@ -61,11 +63,15 @@ public class Main
         	catch (NumberFormatException e)
         	{
         		Log.error("Missing or invalid userid setting in configuration file for privileges drop!");
+        		Log.warn("Failed to drop privileges, process is running as root!");
         	}
          }
       }
       
       // Initializes the Job manager
       JobManager.getInstance();
+      
+      // Start processing requests
+      webInterface.start();
    }
 }

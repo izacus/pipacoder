@@ -106,12 +106,14 @@ public final class JobManager implements Runnable
         {
            for (int i = 0; i < runningJobs.length; i++)
            {
+              // Remove finished or failed jobs from running job queue
               if (runningJobs[i] != null && 
                   (runningJobs[i].getState() == JobStates.DONE || runningJobs[i].getState() == JobStates.FAILED))
               {
                  runningJobs[i] = null;
               }
               
+              // Add any possible 
               if (runningJobs[i] == null && !jobQueue.isEmpty())
               {
                  Job nextJob = jobQueue.remove(0);
@@ -120,28 +122,7 @@ public final class JobManager implements Runnable
                  nextJob.start();
               }
            }
-           
-           
-           // Remove complete job from the variable
-           /*(if (runningJob != null &&
-               (runningJob.getState() == JobStates.DONE || runningJob.getState() == JobStates.FAILED))
-           {
-              runningJob = null;
-           }
-           
-           // Start executing next job if the queue is empty
-           if (runningJob == null &&
-               !jobQueue.isEmpty())
-           {
-              // Remove first element in queue
-              Job nextJob = jobQueue.remove(0);
-              
-              runningJob = nextJob;
-              nextJob.start();
-           } */
-           
-           // TODO: check output folder and remove done jobs without associated files
-           
+                      
            // Wait for notification or maximum of 20 seconds before rerunning
            try
            {
@@ -156,7 +137,7 @@ public final class JobManager implements Runnable
      }
    }
    
-   public int addJob(String fileName, OutputFormat format)
+   public synchronized int addJob(String fileName, OutputFormat format)
    {  
       Job newJob = null;
       
