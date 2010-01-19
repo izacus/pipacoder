@@ -35,7 +35,8 @@ public class Main
       // Initialize web interface
       try
       {
-         WebInterface webInt = new WebInterface(Integer.parseInt(Configuration.getValue("webport")));
+         WebInterface webInterface = new WebInterface(Integer.parseInt(Configuration.getValue("webport")));
+         Log.info("Running interface is " + webInterface.getId());
       }
       catch(IOException e)
       {
