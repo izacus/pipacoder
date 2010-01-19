@@ -40,6 +40,8 @@ import org.kiberpipa.coder.processor.FFMpegProcessor;
 
 public class WebInterface extends NanoHTTPD implements UserInterface
 { 
+   private boolean started = false;
+   
    /**
     * Starts a web interface HTTP daemon on selected port
     * @param port port to bind to
@@ -57,6 +59,15 @@ public class WebInterface extends NanoHTTPD implements UserInterface
    {
       return "webinterface";
    }
+   
+   /**
+    * Causes interface to start processing requests
+    * Call this after any privilege drop after port binding
+    */
+   public void start()
+   {
+      this.started = true;
+   }
 
    @Override
    /**
@@ -65,6 +76,11 @@ public class WebInterface extends NanoHTTPD implements UserInterface
    public Response serve(String uri, String method, Properties header,
                          Properties parms)
    {
+      // Do not serve responses until the webservice is started
+      // This is here to prevent requests from comming through until privileges are dropped
+      if (!this.started)
+         return new Response(HTTP_FORBIDDEN, "text/html", "Forbidden, transcoder is not ready yet.");
+      
       // Get possible API call command
       String command = getAPICommandFromURI(uri);
       
