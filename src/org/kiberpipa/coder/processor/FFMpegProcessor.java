@@ -295,6 +295,15 @@ public class FFMpegProcessor extends VideoProcessor
          ProcessLine(line);
       }
       
+      try
+      {
+         inputStreamReader.close();
+      } 
+      catch (IOException e)
+      {
+         Log.error(e.getMessage());
+      }
+      
       // Linux needs a longer time to clean up after process
       // so we need to wait or retrieving exit value fails
       try

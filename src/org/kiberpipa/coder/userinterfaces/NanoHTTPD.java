@@ -256,8 +256,8 @@ public class NanoHTTPD
          System.err.println("Couldn't start server:\n" + ioe);
          System.exit(-1);
       }
-
-      System.out.println("Now serving files in port " + port + " from \""
+      
+      System.out.println("Now serving files in port " + nh.myTcpPort + " from \""
             + new File("").getAbsolutePath() + "\"");
       System.out.println("Hit Enter to stop.\n");
 
@@ -294,7 +294,12 @@ public class NanoHTTPD
             BufferedReader in = new BufferedReader(new InputStreamReader(is));
 
             // Read the request line
-            StringTokenizer st = new StringTokenizer(in.readLine());
+            String readLine = in.readLine();
+            
+            if (readLine == null)
+               return;
+            
+            StringTokenizer st = new StringTokenizer(readLine);
             if (!st.hasMoreTokens())
                sendError(HTTP_BADREQUEST,
                      "BAD REQUEST: Syntax error. Usage: GET /example/file.html");
@@ -570,7 +575,6 @@ public class NanoHTTPD
    }
 
    private int myTcpPort;
-   File myFileDir;
 
    // ==================================================
    // File server code

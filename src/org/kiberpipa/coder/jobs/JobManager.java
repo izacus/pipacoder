@@ -31,7 +31,7 @@ import org.kiberpipa.coder.Database;
 import org.kiberpipa.coder.Log;
 import org.kiberpipa.coder.formats.OutputFormat;
 
-public class JobManager implements Runnable
+public final class JobManager implements Runnable
 {
    // Singleton class initializer
    
