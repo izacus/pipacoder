@@ -68,7 +68,7 @@ public class JobManager implements Runnable
       
       try
       {
-         concurrentJobs = Integer.parseInt(Configuration.getValue("concurrentJobs"));
+         concurrentJobs = Integer.parseInt(Configuration.getValue("concurrentjobs"));
       }
       catch (Exception e)
       {

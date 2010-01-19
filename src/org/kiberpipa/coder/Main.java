@@ -29,11 +29,8 @@ import org.kiberpipa.coder.userinterfaces.WebInterface;
 public class Main
 {
    public static void main(String[] args) throws IOException
-   {    	   
-      // Initializes the Job manager
-      JobManager.getInstance();
-      // Start web interface
-      
+   {  
+      // Initialize web interface
       try
       {
          WebInterface webInt = new WebInterface(Integer.parseInt(Configuration.getValue("webport")));
@@ -45,5 +42,21 @@ public class Main
          
          System.exit(1);
       }
+      
+      // If we're running on linux as root, drop privileges
+      String osString = System.getProperty("os.name");
+      
+      if (!osString.trim().startsWith("Win"))
+      {
+         if (OS.getUID() == 0)
+         {
+            int uid = Integer.valueOf(Configuration.getValue("userid"));
+            Log.info("Running as root, dropping privileges to " + uid);
+            OS.setUID(uid);
+         }
+      }
+      
+      // Initializes the Job manager
+      JobManager.getInstance();
    }
 }
