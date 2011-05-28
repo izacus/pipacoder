@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>PipaCoder preset settings</title>
+    <link rel="stylesheet" href="css/layout.css">
+    <script type="text/javascript" src="js/jquery-1.3.2.js"></script>
+    <script type="text/javascript" src="js/format.js"></script>
+    <script type="text/javascript" src="js/presets.js"></script>
+</head>
+<body>
+     <div id="page-container">
+	     <div id="header">
+	         <h1>PipaCoder</h1><br>
+	         <h2>Preset management</h2>
+	     </div>
+	 
+	     <div id="newjob">
+		     <div>
+		         <div id="newjob-ul">
+		             <div class="newjob-labels">
+		                 Format presets:
+		             </div>
+		             <div id="newjob-selections">
+		                 <select id="select-preset" class="newjob-select">
+		                     <option>Loading...</option>
+		                 </select>                           
+		             </div>
+		         </div>
+		         <div id="newjob-ur">
+                        <input id="preset_name">
+                        <br><span class="format-hints">New preset name</span>
+                 </div>
+		     </div>
+		     <div class="floatfix"></div>
+	     </div>
+	     <!-- Format selection boxes -->
+	     <div>
+	         <div class="newjob-labels">
+	             Target formats:
+	         </div>
+	         <div class="formats-box">
+	             <div class="box-title">All encoding options</div>
+	             <div>
+	                 <select name="allformatlist" id="allformatlist" class="box-list" multiple="multiple" size="6">
+	                     <option>Loading...</option>
+	                 </select>
+	             </div>
+	         </div>
+	         <div id="format-buttons">
+	             <button type="button" id="add" class="button">&gt;</button><br>
+	             <button type="button" id="remove" class="button">&lt;</button>
+	         </div>
+	         
+	         <div class="formats-box">
+	             <div class="box-title">Encode into</div>
+	             <div>
+	                 <select name="selectedformatlist" id="selectedformatlist" class="box-list" multiple="multiple" size="6">
+	                     <option>&nbsp;</option>
+	                 </select>
+	             </div>
+	         </div>
+	         <div class="encode-button-box">
+	             <button type="button" class="encode-button" id="save_preset">Save preset</button>
+	         </div>
+	     </div>
+	     
+	    <div id="footer">
+        <h6>
+            This is free software.
+        </h6>
+    </div>
+     </div>
+</body>
+</html>

@@ -49,7 +49,7 @@ public class OutputFormat
    private String ffmpegParams;
      
    public OutputFormat(int id,
- 		 			        String name,
+ 		 			   String name,
                        String appendix,
                        boolean twopass,
                        String vFormat,

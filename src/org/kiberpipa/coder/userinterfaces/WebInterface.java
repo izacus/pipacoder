@@ -26,13 +26,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.kiberpipa.coder.Configuration;
 import org.kiberpipa.coder.Log;
 import org.kiberpipa.coder.formats.FormatManager;
+import org.kiberpipa.coder.formats.FormatPreset;
 import org.kiberpipa.coder.formats.OutputFormat;
+import org.kiberpipa.coder.formats.PresetManager;
 import org.kiberpipa.coder.jobs.Job;
 import org.kiberpipa.coder.jobs.JobManager;
 import org.kiberpipa.coder.jobs.JobStates;
@@ -99,6 +104,10 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          {
             responseString = getFormatsJSON();
          }
+         else if (command.equals("presets"))
+         {
+        	 responseString = getPresetsJSON();
+         }
          else if (command.equals("supportedformats"))
          {
             responseString = getSupportedFormats();
@@ -145,26 +154,59 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       return serveFile(uri, header, new File("webinterface"), false);
    }
 
+   @SuppressWarnings("unchecked")
+   private String getPresetsJSON()
+   {
+	   List<FormatPreset> presets = PresetManager.getInstance().getPresets();
+	   
+	   JSONArray array = new JSONArray();
+	   
+	   for (FormatPreset preset : presets)
+	   {
+		   JSONObject obj = new JSONObject();
+		   obj.put("id", preset.getId());
+		   obj.put("name", preset.getName());
+		   
+		   JSONArray formatArray = new JSONArray();
+		   
+		   for (OutputFormat format : preset.getFormats())
+		   {
+			   formatArray.add(format.getId());
+		   }
+		   
+		   obj.put("formatIds", formatArray);
+		   
+		   array.add(obj);
+	   }
+	   
+	   return array.toString();
+   }
+
+   @SuppressWarnings("unchecked")
    private String getSupportedFormats()
    {
       // Get supported formats from FFMPEG processor
       HashMap<String, String> formats = FFMpegProcessor.getSupportedVideoFormats();
+   
       
-      StringBuilder response = new StringBuilder();
-      response.append("{video:[");
+      JSONObject response = new JSONObject();
+      JSONArray videoFormats = new JSONArray();
+      
+      response.put("video", videoFormats);
       
       LinkedList<String> keys = new LinkedList<String>(formats.keySet());
       Collections.sort(keys);
       
       for (String abbrev : keys)
       {
-         response.append("{abbrev:'" + abbrev.replaceAll("'", "\\'") + "',name:'" + formats.get(abbrev).replaceAll("'", "\\'") + "'},");
+    	 JSONObject format = new JSONObject();
+    	 format.put("abbrev", abbrev);
+    	 format.put("name", formats.get(abbrev));
+    	 videoFormats.add(format);
       }
       
-      // Delete trailing comma
-      response.deleteCharAt(response.length() - 1);
-      
-      response.append("], audio:[");
+      JSONArray audioFormats = new JSONArray();
+      response.put("audio", audioFormats);
       
       formats = FFMpegProcessor.getSupportedAudioFormats();
       keys = new LinkedList<String>(formats.keySet());
@@ -172,15 +214,12 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       
       for (String abbrev : keys)
       {
-         response.append("{abbrev:'" + abbrev.replaceAll("'", "\\'") + "',name:'" + formats.get(abbrev).replaceAll("'", "\\'") + "'},");
+     	 JSONObject format = new JSONObject();
+    	 format.put("abbrev", abbrev);
+    	 format.put("name", formats.get(abbrev));
+    	 audioFormats.add(format);
       }
-      // Delete trailing comma
-      response.deleteCharAt(response.length() - 1);
-
-      
-      response.append("]}");
-      
-      
+            
       return response.toString();
    }
 
@@ -198,7 +237,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       
       if (formatStrings == null)
       {
-         return getErrorResponse("No output formats were specified!");
+         return getStatusResponse("ERROR", "No output formats were specified!");
       }
       
       StringTokenizer tokenizer = new StringTokenizer(formatStrings, ",");
@@ -215,7 +254,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
             
             if (format == null)
             {
-               return getErrorResponse("Format with ID " + id + " does not exist.");
+               return getStatusResponse("ERROR", "Format with ID " + id + " does not exist.");
             }
             else
             {
@@ -224,7 +263,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          }
          catch (NumberFormatException ex)
          {
-            return getErrorResponse("Invalid format ID string passed.");
+            return getStatusResponse("ERROR", "Invalid format ID string passed.");
          }
       }
       
@@ -253,7 +292,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          }
       }
       
-      return "{ status : 'OK', message : 'Jobs added successfully.' } ";
+      return getStatusResponse("OK", "Jobs added successfully.");
    }
    
    private String stopJob(Properties parms)
@@ -263,7 +302,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       // Check if ID parameter exists
       if (parms.get("id") == null)
       {
-         return getErrorResponse("No id sent.");
+         return getStatusResponse("ERROR", "No id sent.");
       }
       
       // Check if number was sent
@@ -273,7 +312,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       }
       catch (NumberFormatException e)
       {
-         return getErrorResponse("Invalid ID.");
+         return getStatusResponse("ERROR", "Invalid ID.");
       }
       
       Job job = JobManager.getInstance().getJobWithId(id);
@@ -313,54 +352,49 @@ public class WebInterface extends NanoHTTPD implements UserInterface
     * Builds input file listing JSON array
     * @return
     */
+   @SuppressWarnings("unchecked")
    private String getInputFilesJSON()
    {
-      StringBuilder output = new StringBuilder();
-      
-      output.append("[ ");
+	  JSONArray response = new JSONArray();
       
       File inputFileDirectory = new File(Configuration.getValue("inputdir"));
       for (String fileName : inputFileDirectory.list())
       {
-         output.append("'" + fileName + "',");
+         response.add(fileName);
       }
       
-      // Replace final comma with closing bracket
-      output.setCharAt(output.length() - 1, ']');
-      
-      return output.toString();
+      return response.toString();
    }
    
    /**
     * Builds available output formats listing JSON array
     * @return
     */
+   @SuppressWarnings("unchecked")
    private String getFormatsJSON()
    {
-      StringBuilder output = new StringBuilder();
-      
-      output.append("[ ");
-      
+	  JSONArray response = new JSONArray(); 
+	  
       for (OutputFormat format : FormatManager.getInstance().getFormats())
       {
-         output.append("{id:" + format.getId() +",");
-         output.append("name:'" + format.getName() +"'},");
+    	 JSONObject jsonFormat = new JSONObject();
+    	 jsonFormat.put("id", format.getId());
+    	 jsonFormat.put("name", format.getName());
+         response.add(jsonFormat);
       }
       
-      output.setCharAt(output.length() - 1, ']');
-      
-      return output.toString();
+      return response.toJSONString();
    }
    
    /**
     * Builds are currently available jobs listing JSON array
     * @return
     */
+   @SuppressWarnings("unchecked")
    private String getAllJobsJSON()
    {
-      StringBuilder output = new StringBuilder();
-      output.append("[ ");
-      
+	  JSONArray response = new JSONArray(); 
+	   
       ArrayList<Job> jobs = JobManager.getInstance().getJobs();
       Collections.reverse(jobs);
       
@@ -369,26 +403,24 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       {
          Job job = jobs.get(i);
          
-         output.append("{id:" + job.getId() + ",");
-         output.append("filename:'" + job.getInputFileName() + "', ");
-         output.append("format: '" + job.getOutputFormat().getName() + "',");
-         output.append("status: '" + job.getState().toString() +"'");
+         JSONObject jsonJob = new JSONObject();
+         jsonJob.put("id", job.getId());
+         jsonJob.put("filename", job.getInputFileName());
+         jsonJob.put("format", job.getOutputFormat().getName());
+         jsonJob.put("status", job.getState().toString());
          
          if (job.getState() == JobStates.RUNNING)
          {
-            output.append(",progress : '" + String.format("%.2f", job.getProgress()) + "%'");
-            output.append(",eta : 'TBD' },");
+        	jsonJob.put("progress", String.format("%.2f", job.getProgress()) + "%'");
          }
-         else
-         {
-            output.append("},");
-         }
+         
+         response.add(jsonJob);
       }
       
-      output.setCharAt(output.length() - 1, ']');
-      return output.toString();
+      return response.toJSONString();
    }
    
+   @SuppressWarnings("unchecked")
    private String getJobFailReason(Properties params)
    {
       int id = -1;
@@ -396,7 +428,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       // Check if ID parameter exists
       if (params.get("id") == null)
       {
-         return getErrorResponse("No id sent.");
+         return getStatusResponse("ERROR", "No id sent.");
       }
       
       // Check if number was sent
@@ -406,19 +438,22 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       }
       catch (NumberFormatException e)
       {
-         return getErrorResponse("Invalid ID.");
+         return getStatusResponse("ERROR", "Invalid ID.");
       }
       
       Job job = JobManager.getInstance().getJobWithId(id);
       
       if (job == null)
       {
-         return getErrorResponse("Job doesn't exist anymore.");
+         return getStatusResponse("ERROR", "Job doesn't exist anymore.");
       }
       
       String message = job.getFailMessage() == null ? "No error message stored." : job.getFailMessage().replaceAll("\\n", "<br>").replaceAll("\\r", "").replaceAll("\\\\", "\\\\\\\\").replaceAll("\'", "\\\\'");
       
-      return "{ message: '" + message + "'}";
+      JSONObject response = new JSONObject();
+      response.put("message", message);
+      
+      return response.toJSONString();
    }
    
    /**
@@ -426,6 +461,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
     * @param params  GET parameters of new format
     * @return response string
     */
+   @SuppressWarnings("unchecked")
    private String addNewFormat(Properties params)
    {
       Log.info("[API] Adding new format...");
@@ -460,7 +496,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
              !params.containsKey("ffmpegparams"))
          {
             Log.error("[API] Request for new format denied because of missing parameter.");
-            return getErrorResponse("Missing parameter.");
+            return getStatusResponse("ERROR", "Missing parameter.");
          }
          
          id = Integer.parseInt(params.getProperty("id"));
@@ -479,7 +515,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       catch (NumberFormatException e)
       {
          Log.error("[API] Request for new format denied because of invalid parameter.");
-         return getErrorResponse("Invalid parameter.");
+         return getStatusResponse("ERROR", "Invalid parameter.");
       }
       
       // Dereference resolution
@@ -496,7 +532,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       catch(Exception e)
       {
          Log.error("[API] Request for new format denied because of invalid parameter.");
-         return getErrorResponse("Invalid parameter.");
+         return getStatusResponse("ERROR", "Invalid parameter.");
       }
       
       // Create new format
@@ -504,10 +540,15 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       
       if (id == -1)
       {
-         return getErrorResponse("Failed to add new format.");
+         return getStatusResponse("ERROR", "Failed to add new format.");
       }
       
-      return "{ status : 'OK', id : " + id + ", message : 'Format added successfully.' }";
+      JSONObject response = new JSONObject();
+      response.put("status", "OK");
+      response.put("id", id);
+      response.put("message", "Format added successfully.");
+      
+      return response.toJSONString();
    }
    
    /**
@@ -515,6 +556,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
     * @param params
     * @return
     */
+   @SuppressWarnings("unchecked")
    private String updateFormat(Properties params)
    {
       Log.info("[API] Updating format...");
@@ -549,7 +591,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
              !params.containsKey("ffmpegparams"))
          {
             Log.error("[API] Request for new format denied because of missing parameter.");
-            return getErrorResponse("Missing parameter.");
+            return getStatusResponse("ERROR", "Missing parameter.");
          }
          
          id = Integer.parseInt(params.getProperty("id"));
@@ -568,7 +610,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       catch (NumberFormatException e)
       {
          Log.error("[API] Request for update format denied because of invalid parameter.");
-         return getErrorResponse("Invalid parameter.");
+         return getStatusResponse("ERROR", "Invalid parameter.");
       }
       
       // Dereference resolution
@@ -585,7 +627,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       catch(Exception e)
       {
          Log.error("[API] Request for update format denied because of invalid parameter.");
-         return getErrorResponse("Invalid parameter.");
+         return getStatusResponse("ERROR", "Invalid parameter.");
       }
       
       // Create new format
@@ -597,10 +639,15 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       {
          Log.error("[API] Error updating format id " + id + ": " + e.getMessage());
          
-         return getErrorResponse(e.getMessage());
+         return getStatusResponse("ERROR", e.getMessage());
       }
 
-      return "{ status : 'OK', id : " + id + ", message : 'Format updated successfully.' }";
+      JSONObject response = new JSONObject();
+      response.put("status", "OK");
+      response.put("id", id);
+      response.put("message", "Format updated successfully.");
+      
+      return response.toJSONString();
    }
    
    private String removeFormat(Properties parms)
@@ -608,7 +655,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       if (!parms.containsKey("id"))
       {
          Log.error("[API] Request for delete format denied because of invalid parameter.");
-         return getErrorResponse("Invalid parameter.");
+         return getStatusResponse("ERROR", "Invalid parameter.");
       }
       
       int id = -1;
@@ -620,7 +667,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       catch (NumberFormatException e)
       {
          Log.error("[API] Request for delete format denied because of invalid parameter: " + parms.getProperty("id"));
-         return getErrorResponse("Invalid parameter.");
+         return getStatusResponse("ERROR", "Invalid parameter.");
       }
       
       try
@@ -630,10 +677,10 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       catch (Exception e)
       {
          Log.error("[API] Request for delete failed: " + e.getMessage());
-         return getErrorResponse(e.getMessage());
+         return getStatusResponse("ERROR", e.getMessage());
       }
       
-      return "{ status : 'OK', message : 'Format deleted successfully.' }";
+      return getStatusResponse("OK", "Format deleted successfully.");
    }
    
    /**
@@ -641,6 +688,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
     * @param params parameters including "id" with format id
     * @return json format information array
     */
+   @SuppressWarnings("unchecked")
    private String getFormatInfoJSON(Properties params)
    {
       int id = -1;
@@ -648,7 +696,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       // Check if ID parameter exists
       if (params.get("id") == null)
       {
-         return getErrorResponse("No id sent.");
+         return getStatusResponse("ERROR", "No id sent.");
       }
       
       // Check if number was sent
@@ -658,7 +706,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       }
       catch (NumberFormatException e)
       {
-         return getErrorResponse("Invalid ID.");
+         return getStatusResponse("ERROR", "Invalid ID.");
       }
       
       OutputFormat format = FormatManager.getInstance().getFormatWithId(id);
@@ -666,30 +714,33 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       // Check existence of the format
       if (format == null)
       {
-         return getErrorResponse("Invalid ID.");
+         return getStatusResponse("ERROR", "Invalid ID.");
       }
       
-      // Build response
-      StringBuilder response = new StringBuilder();
-      
-      response.append("{id: " + format.getId() + ",");
-      response.append(" formatname: '" + format.getName() + "',");
-      response.append(" twopass : " + format.isTwopass() + ", ");
-      response.append(" vformat:'" + format.getVideoFormat() + "',");
-      response.append(" vbitrate: " + format.getVideoBitrate() + ",");
-      response.append(" vresolution: '" + format.getVideoResolution() + "',");
-      response.append(" aformat:'" + format.getAudioFormat() + "',");
-      response.append(" abitrate: " + format.getAudioBitrate() +",");
-      response.append(" asamplerate: " + format.getAudioSamplerate() + ",");
-      response.append(" achannels: " + format.getAudioChannels() + ",");
-      response.append(" ffmpegparams: '" + format.getFfmpegParams() + "',");
-      response.append(" suffix: '" + format.getFileAppendix() + "'}");
+      JSONObject response = new JSONObject();
+      response.put("id", format.getId());
+      response.put("formatname", format.getName());
+      response.put("twopass", format.isTwopass());
+      response.put("vformat", format.getVideoFormat());
+      response.put("vbitrate", format.getVideoBitrate());
+      response.put("vresolution", format.getVideoResolution());
+      response.put("aformat", format.getAudioFormat());
+      response.put("abitrate", format.getAudioBitrate());
+      response.put("asamplerate", format.getAudioSamplerate());
+      response.put("achannels", format.getAudioChannels());
+      response.put("ffmpegparams", format.getFfmpegParams());
+      response.put("suffix", format.getFileAppendix());
       
       return response.toString();
    }
       
-   private String getErrorResponse(String message)
+   @SuppressWarnings("unchecked")
+   private String getStatusResponse(String status, String message)
    {
-      return "{ status : 'ERROR', message : '" + message + "' }";
+	  JSONObject obj = new JSONObject();
+	  obj.put("status", status);
+	  obj.put("message", message);
+	  
+      return obj.toJSONString();
    }
 }

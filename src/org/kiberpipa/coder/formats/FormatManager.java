@@ -67,45 +67,45 @@ public class FormatManager
 	
 	/**
 	 * Adds new output format to known formats
-	 * @param name				   Visible format name 
+	 * @param name				Visible format name 
 	 * @param fileAppendix		Appendix added to input filename to create output filename
 	 * @param videoFormat		Encoded video format
-	 * @param videoX			   Video resolution X
-	 * @param videoY			   Video resolution Y
+	 * @param videoX			Video resolution X
+	 * @param videoY			Video resolution Y
 	 * @param videoBitrate		Encoded video bitrate
 	 * @param audioFormat		Encoded audio format
 	 * @param audioChannels		Number of output audio channels
 	 * @param audioSamplerate	Encoded audio samplerate
 	 * @param audioBitrate		Encoded audio bitrate
-	 * @return					   ID of the new format or -1 if addition failed
+	 * @return					ID of the new format or -1 if addition failed
 	 */
 	public int addFormat(String name,
-						      String fileAppendix,
-						      boolean twopass,
-						      String videoFormat,
-						      int videoX,
-						      int videoY,
-						      int videoBitrate,
-						      String audioFormat,
-						      int audioChannels,
-						      int audioSamplerate,
-						      int audioBitrate,
-						      String ffmpegParams)
+					     String fileAppendix,
+					     boolean twopass,
+					     String videoFormat,
+					     int videoX,
+					     int videoY,
+					     int videoBitrate,
+					     String audioFormat,
+					     int audioChannels,
+					     int audioSamplerate,
+					     int audioBitrate,
+					     String ffmpegParams)
 	{
 		// Format ID is set by the database query
 		OutputFormat newFormat = new OutputFormat(0, 
-												            name, 
-												            fileAppendix,
-												            twopass,
-												            videoFormat, 
-												            videoX, 
-												            videoY, 
-												            videoBitrate, 
-												            audioFormat, 
-												            audioChannels, 
-												            audioSamplerate, 
-												            audioBitrate,
-												            ffmpegParams);
+									              name, 
+									              fileAppendix,
+									              twopass,
+									              videoFormat, 
+									              videoX, 
+									              videoY, 
+									              videoBitrate, 
+									              audioFormat, 
+									              audioChannels, 
+									              audioSamplerate, 
+									              audioBitrate,
+									              ffmpegParams);
 		
 
 	    // Attempt to insert format into database 
