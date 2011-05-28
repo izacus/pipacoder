@@ -58,31 +58,6 @@ function removeFormatClick()
 }
 
 /**
- * Callback from jobs added 
- */
-function jobsAddedCB(response)
-{
-	loadJobTable();
-}
-
-/**
- * Calls API to enqueue selected file for transcoding
- */
-function addJobset()
-{
-	var formatIDs = [];
-	
-	for (var i = 0; i < selectedFormats.length; i++)
-	{
-		formatIDs.push(selectedFormats[i].id);
-	}
-	
-	var request = { filename : $("select#select-filename").val(), formats : formatIDs};
-	
-	$.post("/api/addjobs", request, jobsAddedCB, "json");
-}
-
-/**
  * Load page values after document is ready
  */
 $(document).ready(
