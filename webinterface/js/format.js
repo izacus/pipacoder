@@ -75,7 +75,7 @@ function loadFormatPresetsCB(response)
 	
 	for (var i = 0; i < response.length; i++)
 	{
-		presetListHTML += '<option value="' + response[i].id + '">' + response[i].name + '</option>';
+		presetListHTML += '<option value="' + response[i].id + '" label="' + response[i].name + '">' + response[i].name + '</option>';
 		availablePresets[response[i].id] = response[i].formatIds;
 	}
 	

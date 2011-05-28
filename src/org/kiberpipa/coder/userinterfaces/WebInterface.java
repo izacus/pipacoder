@@ -233,7 +233,7 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       String filename = parms.getProperty("filename");
 
       // Get format IDs from comma delimited string
-      String formatStrings = parms.getProperty("formats");
+      String formatStrings = parms.getProperty("formats[]");
       
       if (formatStrings == null)
       {
