@@ -72,7 +72,7 @@ public class FFMpegProcessor extends VideoProcessor
          command = "ffmpeg";
       }
       
-      command = Configuration.getValue("ffmpegdir") + command + " -formats";
+      command = Configuration.getValue("ffmpegdir") + command + " -codecs";
       
       
       Process ffmpeg = null;
@@ -90,52 +90,46 @@ public class FFMpegProcessor extends VideoProcessor
       BufferedReader output = new BufferedReader(new InputStreamReader(ffmpeg.getInputStream()));
       
       String line = "";
-      int newLine = 0;
       
       supportedAudioFormats = new HashMap<String, String>();
       supportedVideoFormats = new HashMap<String, String>();
+      
+      boolean codecsStart = false;
       
       try
       {
          while((line = output.readLine()) != null)
          {
-                 if(line.equals(""))
-                 {
-                         newLine++;
-                 }
-                 
-                 // Finish parsing at position of the second empty line
-                 if(newLine == 2)
-                 {
-                         break;
-                 }
-                 
-                 if(!line.equals("File formats:") && !line.equals("Codecs:") && !line.contains("Muxing supported"))
-                 {
-                      // Codecs are listed after first newline
-                      if(newLine == 1)
-                      {
-                         if(!line.equals("") && line.charAt(2) == 'E')
-                         {
-                             // Supported video format found
-                             if(line.charAt(3) == 'V')
-                             {
-                                String abbrev = line.substring(8, line.indexOf(' ', 8));
-                                String name = line.substring(line.indexOf(' ', 8)).trim();
-                                
-                                supportedVideoFormats.put(abbrev, name);
-                             }
-                             // Supported audio encoding format found
-                             else if(line.charAt(3) == 'A')
-                             {
-                                String abbrev = line.substring(8, line.indexOf(' ', 8));
-                                String name = line.substring(line.indexOf(' ', 8)).trim();
-                                
-                                supportedAudioFormats.put(abbrev, name);
-                             }
-                         }
-                      }
-                 }
+        	 if (!codecsStart)
+        	 {
+        		 // Find start of codec listing in output
+        		 if (line.startsWith(" ------"))
+        		 {
+        			 codecsStart = true;
+        			 continue;
+        		 }
+        	 }
+        	 else
+        	 {
+        		 // Encoder format
+        		 if (line.length() > 7 && line.charAt(2) == 'E')
+        		 {
+        			 if (line.charAt(3) == 'V')
+        			 {
+        				 String abbrev = line.substring(8, line.indexOf(' ', 8));
+        				 String name = line.substring(line.indexOf(' ', 8));
+        				 supportedVideoFormats.put(abbrev, name);
+        				 
+        			 }
+        			 else if (line.charAt(3) == 'A')
+        			 {
+        				 String abbrev = line.substring(8, line.indexOf(' ', 8));
+        				 String name = line.substring(line.indexOf(' ', 8));
+        				 supportedAudioFormats.put(abbrev, name);
+        			 }
+        			 
+        		 }
+        	 }
          }
          
          output.close();
