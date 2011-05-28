@@ -155,7 +155,7 @@ public class FFMpegProcessor extends VideoProcessor
    }
    
    private int videoDuration;
-   private Process p = null;
+   private volatile Process p = null;
    private LinkedHashMap<Integer, String> lastLineOutput;
    private int lineCount = 0;
    private boolean twopass = false;
@@ -192,6 +192,8 @@ public class FFMpegProcessor extends VideoProcessor
       String executable = "";
       String OS = System.getProperty("os.name");
       
+      int numCores = Runtime.getRuntime().availableProcessors();
+      
       if (OS.trim().startsWith("Win"))
       {
          executable = "ffmpeg.exe";
@@ -216,6 +218,9 @@ public class FFMpegProcessor extends VideoProcessor
       string.append(" -b " + outputFormat.getVideoBitrate() + " -bt " + outputFormat.getVideoBitrate());
       string.append(" -s " + outputFormat.getVideoResolution());
       
+      // Sets number of threads for encoder
+      string.append(" -threads " + numCores);
+      
       // Set pass for twopass
       if (twopass)
       {
@@ -233,6 +238,7 @@ public class FFMpegProcessor extends VideoProcessor
       string.append(" -ab " + outputFormat.getAudioBitrate());
       string.append(" -ar " + outputFormat.getAudioSamplerate());
       string.append(" -ac " + outputFormat.getAudioChannels());
+      string.append(" -threads " + numCores);
       
       // Output file name
       File outputFile = new File(Configuration.getValue("outputdir") + File.separatorChar + job.getOutputFileName());
