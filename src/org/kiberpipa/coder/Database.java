@@ -29,8 +29,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.kiberpipa.coder.formats.FormatManager;
+import org.kiberpipa.coder.formats.FormatPreset;
 import org.kiberpipa.coder.formats.OutputFormat;
 import org.kiberpipa.coder.jobs.Job;
 import org.kiberpipa.coder.jobs.JobStates;
@@ -282,10 +284,8 @@ public class Database
 	            
 	            // Get retrieved key
 	            statement = dbConn.prepareStatement("SELECT last_insert_rowid();");
-	            
 	            ResultSet rowId = statement.executeQuery();
 	            rowId.next();
-	            
 	            int id = rowId.getInt(1);
 	            
 	            format.setId(id);
@@ -396,6 +396,146 @@ public class Database
 	            catch (SQLException e)
 	            {}
 	      }
+	}
+	
+	/*
+	 * PRESET MANAGEMENT
+	 */
+	public static ArrayList<FormatPreset> getPresets(FormatManager formatManager)
+	{
+		HashMap<Integer, FormatPreset> presets = new HashMap<Integer, FormatPreset>();
+		
+		Connection dbConn = null;
+		
+		try
+		{
+		      dbConn = connectSQLite();
+		      
+		      // Find list of all available presets
+		      Statement statement = dbConn.createStatement();
+		      ResultSet results = statement.executeQuery("SELECT * FROM presets");
+		      
+		      while(results.next())
+		      {
+		    	  FormatPreset preset = new FormatPreset(results.getInt("id"),
+		    			  								 results.getString("name"));
+		    	  
+		    	  presets.put(preset.getId(), preset);
+		      }
+		      
+		      // Resolve preset to format mappings
+		      results = statement.executeQuery("SELECT * FROM preset_format");
+		      
+		      while(results.next())
+		      {
+		    	  int presetId = results.getInt("prst_id");
+		    	  int formatId = results.getInt("fmt_id");
+		    	  presets.get(presetId).addFormat(formatManager.getFormatWithId(formatId));
+		      }
+		}
+		catch (SQLException e)
+		{
+			Log.error("Failed to load preset list: " + e.getMessage());
+		}
+		finally
+		{
+			if (dbConn != null)
+			{
+				try
+				{
+					dbConn.close();
+				} 
+				catch (SQLException e)
+				{}
+			}
+		}
+		
+		return new ArrayList<FormatPreset>(presets.values());
+	}
+	
+	public static void putPreset(FormatPreset preset)
+	{
+		deletePreset(preset);
+		
+		Connection dbConn = null;
+		
+		try
+		{
+			dbConn = connectSQLite();
+			dbConn.setAutoCommit(false);
+			
+			// Create preset
+			PreparedStatement stmt = dbConn.prepareStatement("INSERT INTO presets (name) VALUES (?)");
+			stmt.setString(1, preset.getName());
+			stmt.executeUpdate();
+			
+			// Create foreign key mappings
+			for (OutputFormat format : preset.getFormats())
+			{
+				stmt = dbConn.prepareStatement("INSERT INTO preset_format (prst_id, fmt_id) VALUES (?, ?)");
+				stmt.setInt(1, preset.getId());
+				stmt.setInt(2, format.getId());
+				stmt.executeUpdate();
+			}
+			
+			dbConn.commit();
+			
+			if (preset.getId() == null)
+			{
+	            PreparedStatement statement = dbConn.prepareStatement("SELECT last_insert_rowid();");
+	            ResultSet rowId = statement.executeQuery();
+	            rowId.next();
+	            int id = rowId.getInt(1);
+	            preset.setId(id);
+			}
+		}
+		catch (SQLException e)
+		{
+			Log.error("Failed to put preset to database: " + e.getMessage());
+		}
+		finally
+		{
+			if (dbConn != null)
+			{
+				try
+				{
+					dbConn.close();
+				} catch (SQLException e)
+				{}
+			}
+		}
+	}
+	
+	public static void deletePreset(FormatPreset preset)
+	{
+		if (preset.getId() == null)
+			return;
+		
+		Connection dbConn = null;
+		
+		try
+		{
+	         dbConn = connectSQLite();
+	         
+	         PreparedStatement statement = dbConn.prepareStatement("DELETE FROM presets WHERE id = ?");
+	         statement.setInt(1, preset.getId());
+	         statement.executeUpdate();
+		}
+		catch (SQLException e)
+		{
+			Log.warn("Deletion of existing preset failed, possible update...");
+		}
+		finally
+		{
+			if (dbConn != null)
+			{
+				try
+				{
+					dbConn.close();
+				} catch (SQLException e)
+				{}
+			}
+		}
 	}
 	
 	/*

@@ -24,23 +24,23 @@ import java.util.ArrayList;
 
 public class FormatPreset
 {
-   private int id;
+   private Integer id;
    private String name;
    private ArrayList<OutputFormat> formats;
    
-   public FormatPreset(int id, String name, ArrayList<OutputFormat> formats)
+   public FormatPreset(int id, String name)
    {
       this.id = id;
       this.name = name;
-      this.formats = formats;
+      formats = new ArrayList<OutputFormat>();
    }
 
-   public int getId()
+   public Integer getId()
    {
       return id;
    }
 
-   public void setId(int id)
+   public void setId(Integer id)
    {
       this.id = id;
    }
@@ -58,6 +58,11 @@ public class FormatPreset
    public ArrayList<OutputFormat> getFormats()
    {
       return formats;
+   }
+   
+   public void addFormat(OutputFormat format)
+   {
+	   formats.add(format);
    }
 
    public void setFormats(ArrayList<OutputFormat> formats)
