@@ -358,6 +358,12 @@ public class WebInterface extends NanoHTTPD implements UserInterface
 	  JSONArray response = new JSONArray();
       
       File inputFileDirectory = new File(Configuration.getValue("inputdir"));
+      
+      if (!inputFileDirectory.exists())
+      {
+    	  return response.toJSONString();
+      }
+      
       for (String fileName : inputFileDirectory.list())
       {
          response.add(fileName);
