@@ -453,7 +453,7 @@ public class Database
 		return new ArrayList<FormatPreset>(presets.values());
 	}
 	
-	public static void putPreset(FormatPreset preset)
+	public static void putPreset(FormatPreset preset) throws SQLException
 	{
 		deletePreset(preset);
 		
@@ -462,23 +462,11 @@ public class Database
 		try
 		{
 			dbConn = connectSQLite();
-			dbConn.setAutoCommit(false);
 			
 			// Create preset
-			PreparedStatement stmt = dbConn.prepareStatement("INSERT INTO presets (name) VALUES (?)");
+			PreparedStatement stmt = dbConn.prepareStatement("INSERT INTO presets (name) VALUES (?);");
 			stmt.setString(1, preset.getName());
 			stmt.executeUpdate();
-			
-			// Create foreign key mappings
-			for (OutputFormat format : preset.getFormats())
-			{
-				stmt = dbConn.prepareStatement("INSERT INTO preset_format (prst_id, fmt_id) VALUES (?, ?)");
-				stmt.setInt(1, preset.getId());
-				stmt.setInt(2, format.getId());
-				stmt.executeUpdate();
-			}
-			
-			dbConn.commit();
 			
 			if (preset.getId() == null)
 			{
@@ -488,10 +476,22 @@ public class Database
 	            int id = rowId.getInt(1);
 	            preset.setId(id);
 			}
+			
+			// Create foreign key mappings
+			for (OutputFormat format : preset.getFormats())
+			{
+				stmt = dbConn.prepareStatement("INSERT INTO preset_format (prst_id, fmt_id) VALUES (?,?);");
+				stmt.setInt(1, preset.getId().intValue());
+				stmt.setInt(2, format.getId());
+				
+				stmt.executeUpdate();
+			}
+			
 		}
 		catch (SQLException e)
 		{
 			Log.error("Failed to put preset to database: " + e.getMessage());
+			throw e;
 		}
 		finally
 		{

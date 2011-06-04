@@ -146,12 +146,63 @@ public class WebInterface extends NanoHTTPD implements UserInterface
          {
             responseString = stopJob(parms);
          }
+         else if (command.equals("savepreset"))
+         {
+        	 responseString = savePreset(parms);
+         }
          // Responses are JSON, so return text/javascript MIME type
          return new Response(HTTP_OK, "text/javascript", responseString);
       }
       
       // Attempt to serve file if there is no URL match
       return serveFile(uri, header, new File("webinterface"), false);
+   }
+
+   private String savePreset(Properties parms) 
+   {
+	   Integer presetId;
+	   
+	   if (parms.getProperty("presetId").equalsIgnoreCase("null"))
+	   {
+		   presetId = null;
+	   }
+	   else
+	   {
+		   presetId = Integer.valueOf(parms.getProperty("presetId"));
+	   }
+	   
+	   String presetName = parms.getProperty("presetName");
+	   String formatList = parms.getProperty("formats[]");
+	   
+	   ArrayList<Integer> listOfFormats = new ArrayList<Integer>();
+       StringTokenizer tokenizer = new StringTokenizer(formatList, ",");
+
+       while (tokenizer.hasMoreTokens())
+       {
+    	   int id = Integer.parseInt(tokenizer.nextToken());
+    	   
+           OutputFormat format = FormatManager.getInstance().getFormatWithId(id);
+           
+           if (format == null)
+           {
+              return getStatusResponse("ERROR", "Format with ID " + id + " does not exist.");
+           }
+           else
+           {
+              listOfFormats.add(id);
+           }
+       }
+       
+       try
+       {
+    	   PresetManager.getInstance().putPreset(presetId, presetName, listOfFormats);
+       }
+       catch (Exception e)
+       {
+    	   return getStatusResponse("ERROR", "Failed to create new preset: " + e.getMessage());
+       }
+	   
+	   return getStatusResponse("OK", "Preset " + presetName + " stored successfully.");
    }
 
    @SuppressWarnings("unchecked")
