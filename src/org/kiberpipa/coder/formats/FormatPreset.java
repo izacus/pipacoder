@@ -28,7 +28,7 @@ public class FormatPreset
    private String name;
    private ArrayList<OutputFormat> formats;
    
-   public FormatPreset(int id, String name)
+   public FormatPreset(Integer id, String name)
    {
       this.id = id;
       this.name = name;

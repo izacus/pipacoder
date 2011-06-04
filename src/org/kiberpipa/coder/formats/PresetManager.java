@@ -42,7 +42,7 @@ public class PresetManager
 	}
 	
 	
-	public void putPreset(Integer id, String name, ArrayList<Integer> formatIds)
+	public void putPreset(Integer id, String name, ArrayList<Integer> formatIds) throws Exception
 	{
 		FormatPreset preset = new FormatPreset(id, name);
 		
