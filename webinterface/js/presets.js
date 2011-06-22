@@ -114,7 +114,14 @@ function savePreset()
 	var formatIdList = $.map(selectedFormats, function(format) { return format.id })
 	console.info(formatIdList);
 	
-	var data = { "presetId" : selectedPreset[0], "presetName" : $("input#preset_name").val(), "formats" : formatIdList };
+	var presetId = null;
+	
+	if (selectedPreset != null)
+	{
+		presetId = selectedPreset[0];
+	}
+	
+	var data = { "presetId" : presetId, "presetName" : $("input#preset_name").val(), "formats" : formatIdList };
 	$.get("/api/savepreset", data, presetSavedCB, "json");
 }
 
