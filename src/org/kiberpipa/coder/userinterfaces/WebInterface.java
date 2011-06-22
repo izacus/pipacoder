@@ -175,23 +175,27 @@ public class WebInterface extends NanoHTTPD implements UserInterface
 	   String formatList = parms.getProperty("formats[]");
 	   
 	   ArrayList<Integer> listOfFormats = new ArrayList<Integer>();
-       StringTokenizer tokenizer = new StringTokenizer(formatList, ",");
-
-       while (tokenizer.hasMoreTokens())
-       {
-    	   int id = Integer.parseInt(tokenizer.nextToken());
-    	   
-           OutputFormat format = FormatManager.getInstance().getFormatWithId(id);
-           
-           if (format == null)
-           {
-              return getStatusResponse("ERROR", "Format with ID " + id + " does not exist.");
-           }
-           else
-           {
-              listOfFormats.add(id);
-           }
-       }
+	   
+	   if (formatList != null)
+	   {
+	       StringTokenizer tokenizer = new StringTokenizer(formatList, ",");
+	
+	       while (tokenizer.hasMoreTokens())
+	       {
+	    	   int id = Integer.parseInt(tokenizer.nextToken());
+	    	   
+	           OutputFormat format = FormatManager.getInstance().getFormatWithId(id);
+	           
+	           if (format == null)
+	           {
+	              return getStatusResponse("ERROR", "Format with ID " + id + " does not exist.");
+	           }
+	           else
+	           {
+	              listOfFormats.add(id);
+	           }
+	       }
+	   }
        
        try
        {
@@ -324,6 +328,11 @@ public class WebInterface extends NanoHTTPD implements UserInterface
       if (filename.equals("ALLFILES"))
       {
          File inputFileDirectory = new File(Configuration.getValue("inputdir"));
+         
+         // Check if directory is empty
+         if (inputFileDirectory.list() == null)
+        	 return getStatusResponse("OK", "There were no jobs to add.");
+         
          for (String fileName : inputFileDirectory.list())
          {
             files.add(fileName);
